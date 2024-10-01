@@ -8,6 +8,11 @@ services:
     restart: unless-stopped
     volumes:
       - ./src:/app/src 
+      - ./src/config:/app/config
+      - ./src/models:/app/models
+      - ./src/routes:/app/routes
+      - ./src/migrations:/app/migrations
+      - ./src/seeders:/app/seeders
       - /app/node_modules
     ports:
       - "3000:3000"
@@ -31,4 +36,4 @@ services:
     volumes:
       - db-volume:/var/lib/postgresql/data 
 volumes: 
-  db-volume: 
+  db-volume:
