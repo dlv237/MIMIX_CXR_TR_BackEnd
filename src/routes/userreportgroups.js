@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const Router = require('koa-router');
 const router = new Router();
 
-router.get('userreportgroups.show', '/all', async (ctx) => {
+router.get('userreportgroups.all', '/all', async (ctx) => {
   try {
     const userreportgroups = await ctx.orm.UserReportGroup.findAll();
     ctx.body = userreportgroups;
@@ -13,7 +13,7 @@ router.get('userreportgroups.show', '/all', async (ctx) => {
   }
 });
 
-router.get('userreportgroups.show', '/reportGroup/:reportGroupId', async (ctx) => {
+router.get('userreportgroups.group', '/reportGroup/:reportGroupId', async (ctx) => {
   const token = ctx.request.headers.authorization;
   const reportGroupId = ctx.params.reportGroupId;
   if (!token) {
@@ -47,18 +47,113 @@ router.get('userreportgroups.show', '/reportGroup/:reportGroupId', async (ctx) =
     ctx.status = 200;
     ctx.body = userReportGroup;
 
-  } catch (error) {
-    console.error('Error al obtener el URG:', error);
-    ctx.status = 500;
-    ctx.body = { error: 'Ocurrió un error al obtener el URG.' };
+    } catch (error) {
+      console.error('Error al obtener el URG:', error);
+      ctx.status = 500;
+      ctx.body = { error: 'Ocurrió un error al obtener el URG.' };
+    }
   }
-}
 );
 
+router.get('userreportgroups.report', '/report/:groupId/:reportId', async (ctx) => {
+  const reportId = parseInt(ctx.params.reportId, 10); 
+  const groupId = parseInt(ctx.params.groupId, 10);
 
-router.get('userreportgroups.show', '/user/:reportGroupId', async (ctx) => {
+  try {
+    const reportgroupreports = await ctx.orm.ReportGroupReport.findAll({
+      where: {
+        reportGroupId: groupId
+      }
+    });
+    
+    const reportIds = reportgroupreports.map((report) => report.reportId);
+    const reports = await ctx.orm.Report.findAll({
+      where: {
+        id: reportIds
+      }
+    });
+
+    const reportData = [];
+    let indexReport = 0;
+    for (const report of reports) {
+      const impressionsentences = await ctx.orm.Sentence.findAll({
+        where: {
+          reportId: report.id,
+          sentence_type: "impression",
+        }
+      }); 
+      const findingssentences = await ctx.orm.Sentence.findAll({
+        where: {
+          reportId: report.id,
+          sentence_type: "findings",
+        }
+      }); 
+      const backgroundsentences = await ctx.orm.Sentence.findAll({
+        where: {
+          reportId: report.id,
+          sentence_type: "background",
+
+        }
+      });
+      const impressiontranslatedsentences = await ctx.orm.TranslatedSentence.findAll({
+        where: {
+          reportId: report.id,
+          translated_sentence_type: "impression",
+        }
+      });
+      const findingstranslatedsentences = await ctx.orm.TranslatedSentence.findAll({
+        where: {
+          reportId: report.id,
+          translated_sentence_type: "findings",
+        }
+      });   
+      const backgroundtranslatedsentences = await ctx.orm.TranslatedSentence.findAll({
+        where: {
+          reportId: report.id,
+          translated_sentence_type: "background",
+        }
+      });
+
+      reportData.push({
+        "report": {
+          "index": indexReport,
+          "reportId": report.id,
+          "sentences": {
+            "impression": impressionsentences,
+            "findings": findingssentences,
+            "background": backgroundsentences
+          },
+          "translated_sentences": {
+            "impression": impressiontranslatedsentences,
+            "findings": findingstranslatedsentences,
+            "background": backgroundtranslatedsentences
+          }
+        }
+      });
+      indexReport++;
+      }
+      const specificReport = reportData.find(r => r.report.index === (reportId));
+      ctx.body = specificReport || { error: "Report not found" };
+      console.log("reportData:", reportData);
+      ctx.status = specificReport ? 200 : 404;
+
+      } catch (error) {
+        ctx.body = error;
+        ctx.status = 400;
+      }
+  });
+
+
+router.get('userreportgroups.user', '/user/:reportGroupId', async (ctx) => {
   const token = ctx.request.headers.authorization;
-  const reportGroupId  = ctx.params.reportGroupId;
+  const reportGroupId = ctx.params.reportGroupId;
+  console.log("reportGroupId: ",reportGroupId);
+
+  if (isNaN(reportGroupId)) {
+    ctx.status = 400;
+    ctx.body = { error: 'reportGroupId debe ser un número válido.' };
+    return;
+  }
 
     if (!token) {
       ctx.status = 401; // No autorizado

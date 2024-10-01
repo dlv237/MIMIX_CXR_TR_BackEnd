@@ -64,7 +64,7 @@ router.post('report.create', "/", async (ctx) => {
                 reportId: report.id
             });
             
-            //console.log("Translated report created");
+
             const background_sentences = jsonReport.background_sentences.split("', '").map(sentence => sentence.replace(/['\[\]]/g, '')).filter(sentence => sentence.length > 0);
             const background_translated_sentences = jsonReport.background_translated_sentences.split("', '").map(sentence => sentence.replace(/['\[\]]/g, '')).filter(sentence => sentence.length > 0);
             const findings_sentences = jsonReport.findings_sentences.split("', '").map(sentence => sentence.replace(/['\[\]]/g, '')).filter(sentence => sentence.length > 0);

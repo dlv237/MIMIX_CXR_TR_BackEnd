@@ -1,5 +1,7 @@
 const Router = require('koa-router');
 const router = new Router();
+const jwt = require('jsonwebtoken');
+
 
 router.get('reportgroupreports.show', '/rgr/:id', async (ctx) => {
   try {
@@ -206,5 +208,131 @@ router.delete('reportgroupreports.delete', '/:id', async (ctx) => {
   }
 });
 
+router.get('reportgroupreports.count', '/count/:id', async (ctx) => {
+  try {
+    const reportgroupreports = await ctx.orm.ReportGroupReport.findAll({
+      where: {
+        reportGroupId: ctx.params.id
+      }
+    });
+    ctx.body = reportgroupreports.length;
+    ctx.status = 200;
+  } catch (error) {
+    ctx.body = error;
+    ctx.status = 400;
+  }
+});
+
+router.get('reportgroupreports.completed', '/completed/:groupId', async (ctx) => {
+  try {
+    const token = ctx.request.headers.authorization;
+
+    // Verificar token
+    if (!token) {
+      ctx.status = 401;
+      ctx.body = 'Token no proporcionado';
+      return;
+    }
+
+    const tokenParts = token.split(' ');
+    if (tokenParts.length !== 2 || tokenParts[0] !== 'Bearer') {
+      ctx.status = 401;
+      ctx.body = 'Token mal formateado';
+      return;
+    }
+    const accessToken = tokenParts[1];
+    const decodedToken = jwt.verify(accessToken, process.env.JWT_SECRET);
+    const userId = decodedToken.userId;
+    const groupId = ctx.params.groupId;
+
+    const reportGroupReports = await ctx.orm.ReportGroupReport.findAll({
+      where: { reportGroupId: groupId }
+    });
+    const reportIds = reportGroupReports.map(report => report.reportId);
+
+    const reportsCompleted = [];
+    let completedCount = 0;
+
+    for (const reportId of reportIds) {
+      const translatedSentences = await ctx.orm.TranslatedSentence.findAll({
+        where: { reportId }
+      });
+
+      const translatedSentencesFiltered = translatedSentences.filter(sentence => sentence.text.trim().length > 0);
+
+      const userTranslatedSentences = await ctx.orm.UserTranslatedSentence.findAll({
+        where: {
+          userId,
+          translatedsentenceId: translatedSentences.map(ts => ts.id)
+        }
+      });
+
+      const allReviewed = userTranslatedSentences.every(uts => uts.isSelectedCheck || uts.isSelectedTimes) &&
+        userTranslatedSentences.length === translatedSentencesFiltered.length;
+
+      if (allReviewed) completedCount++;
+
+      reportsCompleted.push({
+        reportId,
+        completed: allReviewed
+      });
+    }
+
+    ctx.body = { reportsCompleted, completedCount };
+    ctx.status = 200;
+
+  } catch (error) {
+    ctx.body = error;
+    ctx.status = 400;
+  }
+});
+
+router.get('reportgroupreports.translated', '/translated/:groupId', async (ctx) => {
+  try {
+    const token = ctx.request.headers.authorization;
+
+    if (!token) {
+      ctx.status = 401;
+      ctx.body = 'Token no proporcionado';
+      return;
+    }
+
+    const tokenParts = token.split(' ');
+    if (tokenParts.length !== 2 || tokenParts[0] !== 'Bearer') {
+      ctx.status = 401;
+      ctx.body = 'Token mal formateado';
+      return;
+    }
+    const accessToken = tokenParts[1];
+    const decodedToken = jwt.verify(accessToken, process.env.JWT_SECRET);
+    const userId = decodedToken.userId;
+    const groupId = ctx.params.groupId;
+
+    const reportGroupReports = await ctx.orm.ReportGroupReport.findAll({
+      where: { reportGroupId: groupId }
+    });
+    const reportIds = reportGroupReports.map(report => report.reportId);
+
+    let totalTranslatedSentences = 0;
+
+    for (const reportId of reportIds) {
+      const translatedSentences = await ctx.orm.TranslatedSentence.findAll({
+        where: { reportId }
+      });
+
+      totalTranslatedSentences += translatedSentences.filter(sentence => sentence.text.trim() !== "").length;
+    }
+
+    ctx.body = { totalTranslatedSentences };
+    ctx.status = 200;
+
+  } catch (error) {
+    ctx.body = error;
+    ctx.status = 400;
+    console.error(error);
+  }
+});
+
 
 module.exports = router;
+
