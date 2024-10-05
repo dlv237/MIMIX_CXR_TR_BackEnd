@@ -198,6 +198,7 @@ router.patch('userreportgroups.updateProgress', '/updateprogressReports/:reportG
   const token = ctx.request.headers.authorization;
   const { reportGroupId } = ctx.params;
   const { progressReports } = ctx.request.body;
+  const { lastTranslatedReportId } = ctx.request.body;
   //console.log("progressReports: ",progressReports, "reportGroupId: ",reportGroupId);
     if (!token) {
       ctx.status = 401; // No autorizado
@@ -229,6 +230,7 @@ router.patch('userreportgroups.updateProgress', '/updateprogressReports/:reportG
       return;
     }
     userReportGroup.progressReports = progressReports;
+    userReportGroup.lastTranslatedReportId = lastTranslatedReportId;
     await userReportGroup.save();
 
     ctx.status = 200;
@@ -367,15 +369,15 @@ router.post('userreportgroups.create', '/', async (ctx) => {
 
   router.get('userreportgroups.list', '/', async (ctx) => {
     try {
-        const userreportgroups = await ctx.orm.UserReportGroup.findAll();   
-        ctx.body = userreportgroups;
-        ctx.status = 200;
+      const userreportgroups = await ctx.orm.UserReportGroup.findAll();   
+      ctx.body = userreportgroups;
+      ctx.status = 200;
     } 
     
     catch(error){
-        ctx.body = error;
-        ctx.status = 400; 
+      ctx.body = error;
+      ctx.status = 400; 
     }
-});
+  });
   
-  module.exports = router;
+module.exports = router;
