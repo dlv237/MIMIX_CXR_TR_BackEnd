@@ -24,8 +24,8 @@ module.exports = (sequelize, DataTypes) => {
     translatedSentenceId: DataTypes.INTEGER,
     text: DataTypes.TEXT,
     state: DataTypes.BOOLEAN,
-    comments: DataTypes.STRING,
-    changesFinalTranslation: DataTypes.STRING,
+    comments: DataTypes.TEXT,
+    changesFinalTranslation: DataTypes.TEXT,
     sentenceType: DataTypes.STRING
   }, {
     sequelize,
