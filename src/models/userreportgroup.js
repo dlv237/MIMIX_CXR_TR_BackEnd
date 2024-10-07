@@ -25,7 +25,12 @@ module.exports = (sequelize, DataTypes) => {
       }
     },
     progressTranslatedSentences: DataTypes.FLOAT,
-    progressReports: DataTypes.FLOAT
+    progressReports: DataTypes.FLOAT,
+    lastTranslatedReportId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: 0,
+    }
   }, {
     sequelize,
     modelName: 'UserReportGroup',
