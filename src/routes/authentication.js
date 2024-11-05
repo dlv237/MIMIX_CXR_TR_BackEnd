@@ -1,7 +1,6 @@
 const Router = require('koa-router');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
-const bcrypt = require('bcrypt'); // Add bcrypt for password hashing
 
 dotenv.config();
 
@@ -19,7 +18,7 @@ router.post("authentication.signup", "/signup", async (ctx) => {
             return;
         }
 
-        const hashedPassword = await bcrypt.hash(authInfo.password, 10); // Hash the password
+        const hashedPassword = authInfo.password;
 
         const user = await ctx.orm.User.create({
             firstName: authInfo.firstName,
@@ -49,7 +48,7 @@ router.post("authentication.login", "/login", async (ctx) => {
             return;
         }
 
-        const passwordMatch = await bcrypt.compare(authInfo.password, user.password);
+        const passwordMatch =authInfo.password;
 
         if (!passwordMatch) {
             ctx.status = 400;

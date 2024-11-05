@@ -43,10 +43,14 @@ router.get('usertranslatedsentences.byTSentence', '/:id', async (ctx) => {
             }
         });
 
-        if (userTranslatedSentences) {
-            ctx.body = userTranslatedSentences;
-            ctx.status = 200;
-        }
+      if (userTranslatedSentences) {
+        ctx.body = userTranslatedSentences;
+        ctx.status = 200;
+      }
+      else {
+        ctx.status = 201;
+        ctx.body = { error: 'UserTranslatedSentence no encontrado.' };
+      }
     } catch (error) {
         ctx.body = error;
         ctx.status = 400;
@@ -265,7 +269,7 @@ router.put('usertranslatedsentences.update', '/update/:id', async (ctx) => {
         });
 
         if (!userTranslatedSentence) {
-            ctx.status = 404; // No encontrado
+            ctx.status = 201; // No encontrado
             ctx.body = 'UserTranslatedSentence no encontrado';
             return;
         }

@@ -22,10 +22,10 @@ module.exports = {
         type: Sequelize.BOOLEAN
       },
       comments: {
-        type: Sequelize.STRING
+        type: Sequelize.TEXT
       },
       changesFinalTranslation: {
-        type: Sequelize.STRING
+        type: Sequelize.TEXT
       },
       sentenceType: {
         type: Sequelize.STRING

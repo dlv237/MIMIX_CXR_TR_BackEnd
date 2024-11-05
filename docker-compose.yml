@@ -17,16 +17,16 @@ services:
     ports:
       - "3000:3000"
     depends_on: 
-      - db 
+      - mimic_db 
     environment:
       PORT: ${PORT}
       DB_NAME: ${DB_NAME}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: ${DB_HOST}
-  db: 
+  mimic_db: 
     image: postgres 
-    container_name: db
+    container_name: mimic_db
     ports:
       - "5445:5432"
     environment:
@@ -34,6 +34,6 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     volumes:
-      - db-volume:/var/lib/postgresql/data 
+      - mimic_db-volume:/var/lib/postgresql/data 
 volumes: 
-  db-volume:
+  mimic_db-volume:

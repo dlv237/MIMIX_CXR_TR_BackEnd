@@ -45,7 +45,7 @@ router.get("suggestions.id", "/:id", async (ctx) => {
       if (suggestion) {
         ctx.body = suggestion;
         ctx.status = 200;
-      } 
+      }
     } catch (error) {
       ctx.body = error;
       ctx.status = 400;

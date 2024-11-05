@@ -2,9 +2,6 @@
 
 /** @type {import('sequelize-cli').Migration} */
 
-'use strict';
-
-const bcrypt = require('bcrypt');
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
@@ -14,7 +11,7 @@ module.exports = {
         lastName: 'Lopez',
         role: 'Admin',
         email: 'juanlopez@example.com',
-        password: await bcrypt.hash('hola123', 10),
+        password: 'hola123',
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -23,7 +20,7 @@ module.exports = {
         lastName: 'Perez',
         role: 'User',
         email: 'mariaperez@example.com',
-        password: await bcrypt.hash('hola123', 10),
+        password: 'hola123',
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -32,7 +29,7 @@ module.exports = {
         lastName: 'Gonzalez',
         role: 'User',
         email: 'pedrogonzalez@example.com',
-        password: await bcrypt.hash('hola123', 10),
+        password: 'hola123',
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -41,7 +38,7 @@ module.exports = {
         lastName: 'Rodriguez',
         role: 'User',
         email: 'lucasrodriguez@example.com',
-        password: await bcrypt.hash('hola123', 10),
+        password: 'hola123',
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -50,7 +47,7 @@ module.exports = {
         lastName: 'Romero',
         role: 'User',
         email: 'andrearomero@example.com',
-        password: await bcrypt.hash('hola123', 10),
+        password: 'hola123',
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -59,7 +56,7 @@ module.exports = {
         lastName: 'Gomez',
         role: 'User',
         email: 'claudiogomez@example.com',
-        password: await bcrypt.hash('hola123', 10),
+        password: 'hola123',
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -68,7 +65,7 @@ module.exports = {
         lastName: 'Ortiz',
         role: 'User',
         email: 'carolinaortiz@example.com',
-        password: await bcrypt.hash('hola123', 10),
+        password: 'hola123',
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -77,7 +74,7 @@ module.exports = {
         lastName: 'Silva',
         role: 'User',
         email: 'robertosilva@example.com',
-        password: await bcrypt.hash('hola123', 10),
+        password: 'hola123',
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -86,7 +83,7 @@ module.exports = {
         lastName: 'Garcia',
         role: 'User',
         email: 'luisagarcia@example.com',
-        password: await bcrypt.hash('hola123', 10),
+        password: 'hola123',
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -95,7 +92,7 @@ module.exports = {
         lastName: 'Hernandez',
         role: 'User',
         email: 'marcelahernandez@example.com',
-        password: await bcrypt.hash('hola123', 10),
+        password: 'hola123',
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -103,7 +100,7 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    
+    await queryInterface.bulkDelete('Users', null, {});
   },
 };
 
