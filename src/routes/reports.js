@@ -47,8 +47,6 @@ router.post('report.create', "/", async (ctx) => {
                 mimic_id: jsonReport.mimic_id
             });
 
-            //console.log("Report created");
-
             const reportGroupReport = await ctx.orm.ReportGroupReport.create({
                 reportId: report.id,
                 reportGroupId: reportGroup.id,
@@ -63,14 +61,22 @@ router.post('report.create', "/", async (ctx) => {
                 translated_language: jsonReport.language_of_translation,
                 reportId: report.id
             });
+
+            let background_sentences = [];
+            let background_translated_sentences = [];
+            let findings_sentences = [];
+            let findings_translated_sentences = [];
+            let impression_sentences = [];
+            let impression_translated_sentences = [];
+            
+            typeof jsonReport.background_sentences === 'string' ? background_sentences = jsonReport.background_sentences.split("', '").map(sentence => sentence.replace(/['\[\]]/g, '')).filter(sentence => sentence.length > 0) : background_sentences = jsonReport.background_sentences;
+            typeof jsonReport.background_translated_sentences === 'string' ? background_translated_sentences = jsonReport.background_translated_sentences.split("', '").map(sentence => sentence.replace(/['\[\]]/g, '')).filter(sentence => sentence.length > 0) : background_translated_sentences = jsonReport.background_translated_sentences;
+            typeof jsonReport.findings_sentences === 'string' ? findings_sentences = jsonReport.findings_sentences.split("', '").map(sentence => sentence.replace(/['\[\]]/g, '')).filter(sentence => sentence.length > 0) : findings_sentences = jsonReport.findings_sentences;
+            typeof jsonReport.findings_translated_sentences === 'string' ? findings_translated_sentences = jsonReport.findings_translated_sentences.split("', '").map(sentence => sentence.replace(/['\[\]]/g, '')).filter(sentence => sentence.length > 0) : findings_translated_sentences = jsonReport.findings_translated_sentences;
+            typeof jsonReport.impression_sentences === 'string' ? impression_sentences = jsonReport.impression_sentences.split("', '").map(sentence => sentence.replace(/['\[\]]/g, '')).filter(sentence => sentence.length > 0) : impression_sentences = jsonReport.impression_sentences;
+            typeof jsonReport.impression_translated_sentences === 'string' ? impression_translated_sentences = jsonReport.impression_translated_sentences.split("', '").map(sentence => sentence.replace(/['\[\]]/g, '')).filter(sentence => sentence.length > 0) : impression_translated_sentences = jsonReport.impression_translated_sentences;
             
 
-            const background_sentences = jsonReport.background_sentences.split("', '").map(sentence => sentence.replace(/['\[\]]/g, '')).filter(sentence => sentence.length > 0);
-            const background_translated_sentences = jsonReport.background_translated_sentences.split("', '").map(sentence => sentence.replace(/['\[\]]/g, '')).filter(sentence => sentence.length > 0);
-            const findings_sentences = jsonReport.findings_sentences.split("', '").map(sentence => sentence.replace(/['\[\]]/g, '')).filter(sentence => sentence.length > 0);
-            const findings_translated_sentences = jsonReport.findings_translated_sentences.split("', '").map(sentence => sentence.replace(/['\[\]]/g, '')).filter(sentence => sentence.length > 0);
-            const impression_sentences = jsonReport.impression_sentences.split("', '").map(sentence => sentence.replace(/['\[\]]/g, '')).filter(sentence => sentence.length > 0);
-            const impression_translated_sentences = jsonReport.impression_translated_sentences.split("', '").map(sentence => sentence.replace(/['\[\]]/g, '')).filter(sentence => sentence.length > 0);
             
             for (let arrayBackgroundIndex = 0; arrayBackgroundIndex < background_sentences.length; arrayBackgroundIndex++) {
                 const sentenceText = background_sentences[arrayBackgroundIndex];

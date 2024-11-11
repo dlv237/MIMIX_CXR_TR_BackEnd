@@ -6,6 +6,8 @@ dotenv.config();
 
 const router = new Router();
 
+const argon2 = require('argon2');
+
 router.post("authentication.signup", "/signup", async (ctx) => {
     const authInfo = ctx.request.body;
 
@@ -18,7 +20,7 @@ router.post("authentication.signup", "/signup", async (ctx) => {
             return;
         }
 
-        const hashedPassword = authInfo.password;
+        const hashedPassword = await argon2.hash(authInfo.password);
 
         const user = await ctx.orm.User.create({
             firstName: authInfo.firstName,
@@ -48,7 +50,7 @@ router.post("authentication.login", "/login", async (ctx) => {
             return;
         }
 
-        const passwordMatch =authInfo.password;
+        const passwordMatch = await argon2.verify(user.password, authInfo.password);
 
         if (!passwordMatch) {
             ctx.status = 400;
