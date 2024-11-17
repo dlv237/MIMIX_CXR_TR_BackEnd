@@ -53,6 +53,16 @@ router.get('reportgroupreports.all', '/', async (ctx) => {
       console.log("LOS IDS DE USUARIOS ENCONTRADOS SON", userIds);
       groupedReports[groupId].users = userIds;
 
+
+      const reportGroupModel = await ctx.orm.TranslatedReport.findOne({
+        where: {
+          reportId: reportIds[0]
+        },
+        attributes: ['model']
+      });
+
+      groupedReports[groupId].model = reportGroupModel ? reportGroupModel.model : null;
+
     }
 
     ctx.body = Object.values(groupedReports);
