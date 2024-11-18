@@ -1,6 +1,4 @@
 .env
 package-lock.json
 node_modules
-*.env
 __pycache__
-./*.env
