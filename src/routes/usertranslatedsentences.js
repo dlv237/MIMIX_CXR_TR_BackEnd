@@ -227,7 +227,7 @@ router.post('usertranslatedsentences.create', '/:id', async (ctx) => {
             state: true,
             isSelectedCheck: userTranslatedSentenceAttributes.isSelectedCheck,
             isSelectedTimes: userTranslatedSentenceAttributes.isSelectedTimes,
-
+            hasAcronym: userTranslatedSentenceAttributes.hasAcronym
         });
         //console.log("USTP created: ", userTranslatedSentence)
         ctx.body = userTranslatedSentence;
