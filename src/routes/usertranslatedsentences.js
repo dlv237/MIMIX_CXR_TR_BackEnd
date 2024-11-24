@@ -282,6 +282,7 @@ router.put('usertranslatedsentences.update', '/update/:id', async (ctx) => {
             userTranslatedSentence.state = userTranslatedSentenceAttributes.state;
             userTranslatedSentence.isSelectedCheck = userTranslatedSentenceAttributes.state ? userTranslatedSentenceAttributes.isSelectedCheck : userTranslatedSentence.isSelectedCheck;
             userTranslatedSentence.isSelectedTimes = userTranslatedSentenceAttributes.state === false ? userTranslatedSentenceAttributes.isSelectedTimes : userTranslatedSentence.isSelectedTimes;
+            userTranslatedSentence.hasAcronym = userTranslatedSentenceAttributes.hasAcronym;
         }
 
         await userTranslatedSentence.save();

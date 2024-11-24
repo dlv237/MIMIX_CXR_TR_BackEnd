@@ -16,7 +16,11 @@ module.exports = (sequelize, DataTypes) => {
     translatedsentenceId: DataTypes.INTEGER,
     state: DataTypes.BOOLEAN,
     isSelectedCheck: DataTypes.BOOLEAN,
-    isSelectedTimes: DataTypes.BOOLEAN
+    isSelectedTimes: DataTypes.BOOLEAN,
+    hasAcronym: {
+      type: DataTypes.STRING,
+      defaultValue: 'no seleccionado',
+    }
   }, {
     sequelize,
     modelName: 'UserTranslatedSentence',
