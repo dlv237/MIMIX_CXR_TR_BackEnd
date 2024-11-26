@@ -13,6 +13,7 @@ services:
       - ./src/routes:/app/routes
       - ./src/migrations:/app/migrations
       - ./src/seeders:/app/seeders
+      - ./stats:/app/stats
       - /app/node_modules
     ports:
       - "3000:3000"

@@ -1,0 +1,7 @@
+sshtunnel
+psycopg2-binary
+reportlab
+pandas
+matplotlib
+seaborn
+nltk
