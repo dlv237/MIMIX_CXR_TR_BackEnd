@@ -139,8 +139,8 @@ router.post('reportgroups.stats', '/stats', async (ctx) => {
 
   const scriptPath = '/app/stats/report_creator.py';
   console.log('Ruta del script de Python:', scriptPath);
-  const pdfFileName = `batch_${reportGroupId}_report.pdf`;
-  const pdfFilePath = `/app/${pdfFileName}`;
+  const pdfFileName = `report.pdf`;
+  const pdfFilePath = `/app/batch_report_files/batch_${reportGroupId}/user_${userId}/${pdfFileName}`;
   console.log('Ruta absoluta del archivo PDF:', pdfFilePath);
 
   try {

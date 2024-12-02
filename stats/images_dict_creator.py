@@ -1,31 +1,25 @@
-from utils import execute_query_via_ssh
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import nltk
 from nltk.corpus import stopwords
 import os
+import json
+import sys
 
-nltk_data_dir = '/root/nltk_data'
+from utils import execute_query_via_ssh, create_directory
 
-os.makedirs(nltk_data_dir, exist_ok=True)
-nltk.data.path.append(nltk_data_dir)
-
-try:
-    nltk.data.find('corpora/stopwords')
-except LookupError:
-    nltk.download('stopwords', download_dir=nltk_data_dir)
-
-if not os.path.exists('images'):
-    os.makedirs('images')
-else:
-    for file in os.listdir('images'):
-        os.remove(os.path.join('images', file))
+nltk.download('stopwords')
 
 
 
-def create_images_dict(userId, batchId):
+
+def create_images_dict(batchId, userId):
     stop_words = set(stopwords.words('spanish'))
+    
+    # Creamos el directorio para guardar los archivos
+    path = create_directory(batchId, userId)
+    
 
     
     dic_reporte = {
@@ -80,7 +74,7 @@ def create_images_dict(userId, batchId):
         plt.text(i, respuesta[0][i] , str(respuesta[0][i]), ha='center')
 
 
-    plt.savefig(os.path.join("images", "batch_error.png") , bbox_inches='tight', dpi=300, facecolor='white')
+    plt.savefig(os.path.join(path,"images", "batch_error.png") , bbox_inches='tight', dpi=300, facecolor='white')
     plt.clf()
     
     #Consulta 2
@@ -93,7 +87,8 @@ def create_images_dict(userId, batchId):
     from 
         (select DISTINCT public."Corrections"."errorType", public."Corrections"."translatedSentenceId" from public."Corrections" where public."Corrections"."userId" = {userId}) t_user 
 
-           
+
+        
     join 
         public."TranslatedSentences" ts on t_user."translatedSentenceId" = ts."sentenceId"
 
@@ -109,8 +104,20 @@ def create_images_dict(userId, batchId):
     # Extraer datos
     errores = [item[0] for item in respuesta]
     cantidades = [item[1] for item in respuesta]
-
-    print(respuesta)
+    
+    sort_cantidades = []
+    sort_errores = []   
+    for tipo in ["functional", "grammatical", "terminological"]:
+        if not tipo in errores:
+            sort_cantidades.append(0)
+            sort_errores.append(tipo)
+        else:
+            index = errores.index(tipo)
+            sort_cantidades.append(cantidades[index])
+            sort_errores.append(tipo)
+            
+    errores = sort_errores
+    cantidades = sort_cantidades
 
     dic_reporte["consulta_2"]["e_funcional"] = cantidades[0]
     dic_reporte["consulta_2"]["e_gramatical"] = cantidades[1]
@@ -126,7 +133,7 @@ def create_images_dict(userId, batchId):
         plt.text(i, cantidad + 0.08, str(cantidad), ha='center')  # `cantidad + 1` para colocar el texto un poco encima
     plt.gca().set_facecolor('white')
 
-    plt.savefig(os.path.join("images", "batch_tipo_error.png") , bbox_inches='tight', dpi=300, facecolor='white')
+    plt.savefig(os.path.join(path,"images",  "batch_tipo_error.png") , bbox_inches='tight', dpi=300, facecolor='white')
     plt.clf()
     
     #Consulta 3
@@ -180,7 +187,7 @@ def create_images_dict(userId, batchId):
     # Guardar la tabla como imagen
     plt.gca().set_facecolor('white')
 
-    plt.savefig(os.path.join("images", "tabla_resultados.png"), bbox_inches='tight', dpi=300, facecolor='white')
+    plt.savefig(os.path.join(path,"images",  "tabla_resultados.png"), bbox_inches='tight', dpi=300, facecolor='white')
     plt.clf()
     
     #Consulta 4
@@ -247,7 +254,7 @@ def create_images_dict(userId, batchId):
     # Guardar la tabla como imagen
     plt.gca().set_facecolor('white')
 
-    plt.savefig(os.path.join("images", "tabla_resultados_2.png"), bbox_inches='tight', dpi=300, facecolor='white')
+    plt.savefig(os.path.join(path, "images", "tabla_resultados_2.png"), bbox_inches='tight', dpi=300, facecolor='white')
     plt.clf()
 
     # Consulta 5
@@ -268,23 +275,9 @@ def create_images_dict(userId, batchId):
 
     
 
-    respuesta = [i[0].lower() for i in execute_query_via_ssh(consulta) if i[0] not in stop_words and not i[0].isdigit()]
+    respuesta = [i[0].lower() for i in execute_query_via_ssh(consulta) if i[0] not in stop_words and not i[0].isdigit() and i[0].isalnum()]
     contador_user = pd.Series(respuesta).value_counts()
 
-    # Gráfico de barras con seaborn
-    plt.figure(figsize=(12, 6))
-    sns.barplot(x=contador_user.index[:15], y=contador_user.values[:15], palette='Set2')
-    plt.title('Palabras más comunes en correcciones')
-    plt.ylabel('Frecuencia')
-    plt.xlabel('Palabra')
-    plt.xticks(rotation=45)
-
-    for i, valor in enumerate(contador_user.values[:15]):
-        plt.text(i, valor, str(valor), ha='center', va='bottom')  # Posiciona el texto sobre la barra
-        
-    plt.gca().set_facecolor('white')
-    plt.savefig(os.path.join("images", "user_15_palabras.png"), bbox_inches='tight', dpi=300, facecolor='white')
-    plt.clf()
 
     #Consulta 6
     consulta = f"""
@@ -302,19 +295,39 @@ def create_images_dict(userId, batchId):
     
 
     respuesta = execute_query_via_ssh(consulta)
-
+    
     lista_palabras = []
     for oracion in respuesta:
-        palabras = [palabra.lower() for palabra in oracion[0].split() if palabra.lower() not in stop_words and not palabra.isdigit()]
+        palabras = [palabra.lower() for palabra in oracion[0].split() if palabra.lower() not in stop_words and not palabra.isdigit() and palabra.isalnum()]
         lista_palabras.extend(palabras)
         
     contador_batch = pd.Series(lista_palabras).value_counts()
+    
+    
+    
+    # GRAFICO DE CONSULTA 5 
+    
+    colores = ['red' if palabra in list(contador_batch.index[:15]) else 'skyblue' for palabra in contador_user.index[:15]]
+    
+    plt.figure(figsize=(12, 6))
+    sns.barplot(x=contador_user.index[:15], y=contador_user.values[:15], palette=colores)
+    plt.title('Palabras más comunes en correcciones')
+    plt.ylabel('Frecuencia')
+    plt.xlabel('Palabra')
+    plt.xticks(rotation=45)
 
-
+    for i, valor in enumerate(contador_user.values[:15]):
+        plt.text(i, valor, str(valor), ha='center', va='bottom')  # Posiciona el texto sobre la barra
+        
+    plt.gca().set_facecolor('white')
+    plt.savefig(os.path.join(path, "images", "user_15_palabras.png"), bbox_inches='tight', dpi=300, facecolor='white')
+    plt.clf()
+    
+    
+    # GRAFICO CONSULTA 6
+  
     colores = ['red' if palabra in list(contador_user.index[:15]) else 'skyblue' for palabra in contador_batch.index[:15]]
 
-
-    # Gráfico de barras con seaborn
     plt.figure(figsize=(12, 6))
     sns.barplot(x=contador_batch.index[:15], y=contador_batch.values[:15], palette=colores)
     plt.title(f'Palabras más comunes en correcciones en batch {batchId}')	
@@ -326,15 +339,41 @@ def create_images_dict(userId, batchId):
         plt.text(i, valor + 0.5, str(valor), ha='center', va='bottom')  # Posiciona el texto sobre la barra
         
     plt.gca().set_facecolor('white')
-    plt.savefig(os.path.join("images", "batch_15_palabras.png") , bbox_inches='tight', dpi=300, facecolor='white')
+    plt.savefig(os.path.join(path,"images",  "batch_15_palabras.png") , bbox_inches='tight', dpi=300, facecolor='white')
     plt.clf()
-
-    return dic_reporte      
-
     
+    dic_reporte["path"] = path
+    
+    dic_reporte["images_paths"] = [os.path.join(path, "images", "batch_error.png"),
+                                   os.path.join(path, "images", "batch_tipo_error.png"),
+                                   os.path.join(path, "images", "tabla_resultados.png"),
+                                   os.path.join(path, "images", "tabla_resultados_2.png"),
+                                   os.path.join(path, "images", "user_15_palabras.png"),
+                                   os.path.join(path, "images", "batch_15_palabras.png")
+                                   ]
 
+    dic_reporte["pdf_path"] = os.path.join(path, "report.pdf")
         
     
+    #Cálculo de estadísicas
+    dic_reporte["consulta_1"]["e1"] = round(dic_reporte['consulta_1']['errores'] / dic_reporte['resumen']['total_oraciones'], 2)
+    dic_reporte["consulta_1"]["e2"] = round(dic_reporte['consulta_1']['correctas'] / dic_reporte['resumen']['total_oraciones'], 2)
     
-    
+    dic_reporte["consulta_2"]["total_errores"] = dic_reporte["consulta_2"]["e_funcional"] + dic_reporte["consulta_2"]["e_gramatical"] + dic_reporte["consulta_2"]["e_terminologico"]
+    dic_reporte["consulta_2"]["e1"] = round(dic_reporte['consulta_2']['e_funcional'] / (dic_reporte["consulta_2"]["total_errores"]) * 100, 2)
+    dic_reporte["consulta_2"]["e2"] = round(dic_reporte['consulta_2']['e_gramatical'] / (dic_reporte["consulta_2"]["total_errores"]) * 100, 2)
+    dic_reporte["consulta_2"]["e3"] = round(dic_reporte['consulta_2']['e_terminologico'] / (dic_reporte["consulta_2"]["total_errores"]) * 100, 2)
 
+    dic_reporte["consulta_4"]["total_errores"] = dic_reporte["consulta_4"]["total_funcional"] + dic_reporte["consulta_4"]["total_gramatical"] + dic_reporte["consulta_4"]["total_terminologico"]
+    dic_reporte["consulta_4"]["e1"] = round(dic_reporte['consulta_4']['total_funcional'] / (dic_reporte["consulta_4"]["total_errores"]) * 100, 2)
+    dic_reporte["consulta_4"]["e2"] = round(dic_reporte['consulta_4']['total_terminologico'] / (dic_reporte["consulta_4"]["total_errores"]) * 100, 2)
+    dic_reporte["consulta_4"]["e3"] = round(dic_reporte['consulta_4']['total_gramatical'] / (dic_reporte["consulta_4"]["total_errores"]) * 100, 2)
+    
+    with open(os.path.join(path, "dic_reporte.json") , 'w') as archivo_json:
+        json.dump(dic_reporte, archivo_json, indent=4)
+    
+    return dic_reporte      
+
+if __name__ == "__main__":
+    print("Uso: python report_creator.py <batch_id: int> <user_id: int or all>")
+    sys.exit(1)

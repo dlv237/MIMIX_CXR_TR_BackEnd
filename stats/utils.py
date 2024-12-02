@@ -1,5 +1,7 @@
 from sshtunnel import SSHTunnelForwarder
 import psycopg2
+import os
+import sys
 
 dic_ssh = {
     "ssh_host" : 'maicolpue.ing.puc.cl',
@@ -47,3 +49,20 @@ def execute_query_via_ssh(query, dic_ssh= dic_ssh , dic_db=dic_db):
 
     except Exception as e:
         print(f"Error: {e}")
+        
+        
+def create_directory(batch, user):
+    # El path será  batch_report_files/batch_{batch}/user_{user}/
+    if not os.path.exists("batch_report_files"):
+        os.mkdir("batch_report_files")
+    if not os.path.exists(os.path.join("batch_report_files", f"batch_{batch}")):
+        os.mkdir(os.path.join("batch_report_files", f"batch_{batch}"))
+    if not os.path.exists(os.path.join("batch_report_files", f"batch_{batch}", f"user_{user}")):
+        os.mkdir(os.path.join("batch_report_files", f"batch_{batch}", f"user_{user}"))
+    if not os.path.exists(os.path.join("batch_report_files", f"batch_{batch}", f"user_{user}", "images")):
+        os.mkdir(os.path.join("batch_report_files", f"batch_{batch}", f"user_{user}", "images"))        
+    return os.path.join("batch_report_files", f"batch_{batch}", f"user_{user}")
+
+if __name__ == "__main__":
+    print("Uso: python report_creator.py <batch_id: int> <user_id: int or all>")
+    sys.exit(1)
