@@ -2,19 +2,23 @@ from sshtunnel import SSHTunnelForwarder
 import psycopg2
 import os
 import sys
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 dic_ssh = {
-    "ssh_host" : 'maicolpue.ing.puc.cl',
-    "ssh_username" : 'dolobos',
-    "ssh_password" : '27marzo2003D'
+  "ssh_host" : 'maicolpue.ing.puc.cl',
+  "ssh_username" : os.getenv('MAICOLPUE_USER'),
+  "ssh_password" : os.getenv('MAICOLPUE_PASSWORD')
 }
 
 dic_db = {
     "db_host" : 'localhost',
     "db_port" : 5445,
     "db_name" : 'MIMIC_CXR_DB',
-    "db_user" : 'dolobos',
-    "db_password" : '1qazxsw2M'
+    "db_user" : os.getenv('DB_USERNAME'),
+    "db_password" : os.getenv('DB_PASSWORD')
 }
 
 
