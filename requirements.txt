@@ -5,4 +5,4 @@ pandas
 matplotlib
 seaborn
 nltk
-dotenv
+python-dotenv
