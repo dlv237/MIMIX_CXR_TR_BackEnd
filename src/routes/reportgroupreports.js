@@ -295,6 +295,40 @@ router.get('reportgroupreports.translated', '/translated/:groupId', async (ctx) 
   }
 });
 
+router.get('reportgroupreports.progress', '/progress/:groupId', async (ctx) => {
+  try {
+
+    const groupId = ctx.params.groupId;
+
+    const reportGroupReports = await ctx.orm.ReportGroupReport.findAll({
+      where: { reportGroupId: groupId }
+    });
+
+    // ahora, debo obtener el lastTranslatedReportId de cada grupo de reportes, debo debolver un array con los id de cada usuario
+    // donde el lastTranslatedReportId sea = a la cantidad de reportes que tiene el grupo de reportes
+
+    const userReportGroups = await ctx.orm.UserReportGroup.findAll({
+      where: { reportGroupId: groupId }
+    });
+
+    const progress = [];
+
+    for (const userReportGroup of userReportGroups) {
+      const userId = userReportGroup.userId;
+      if (userReportGroup.lastTranslatedReportId === reportGroupReports.length) {
+        progress.push(userId);
+      }
+    }
+
+    ctx.body = progress;
+    ctx.status = 200;
+
+  } catch (error) {
+    ctx.body
+    ctx.status = 400;
+  }
+});
+
 
 module.exports = router;
 

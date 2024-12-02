@@ -13,7 +13,6 @@ const usertranslatedsentences = require('./routes/usertranslatedsentences')
 const authRoutes = require('./routes/authentication.js')
 const dotenv = require('dotenv');
 const jwtMiddleware = require('koa-jwt')
-const stats = require('./routes/stats');
 
 dotenv.config();
 
