@@ -5,7 +5,7 @@ import sys
 import os
 import time
 
-from images_dict_creator import create_images_dict
+from utils.images_dict_creator_user  import create_images_dict
 
 
 def create_report_for_user(batch_id, user_id):

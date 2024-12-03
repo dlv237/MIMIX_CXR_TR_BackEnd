@@ -1,7 +1,7 @@
 import sys
 
-from report_generator_user import create_report_for_user
-from report_generator_batch import create_report_for_batch
+from utils.report_generator_user import create_report_for_user
+from utils.report_generator_batch import create_report_for_batch
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
