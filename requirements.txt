@@ -6,3 +6,4 @@ matplotlib
 seaborn
 nltk
 python-dotenv
+textwrap

@@ -2,8 +2,8 @@ from sshtunnel import SSHTunnelForwarder
 import psycopg2
 import os
 import sys
+import textwrap
 from dotenv import load_dotenv
-
 
 load_dotenv()
 
@@ -66,7 +66,11 @@ def create_directory(batch, user):
     if not os.path.exists(os.path.join("batch_report_files", f"batch_{batch}", f"user_{user}", "images")):
         os.mkdir(os.path.join("batch_report_files", f"batch_{batch}", f"user_{user}", "images"))        
     return os.path.join("batch_report_files", f"batch_{batch}", f"user_{user}")
+     
+def wrap_text(text, width=100):
+    return '\n'.join(textwrap.wrap(text, width))
 
 if __name__ == "__main__":
     print("Uso: python report_creator.py <batch_id: int> <user_id: int or all>")
     sys.exit(1)
+    
