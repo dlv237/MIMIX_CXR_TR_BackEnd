@@ -64,7 +64,7 @@ def create_images_dict(batchId, userId):
     dic_reporte["resumen"]["total_oraciones"] = respuesta[0][0] + respuesta[0][1]
 
     #graficar con seaborn barplot sin usar dataframe
-    ax = sns.barplot(x=['Correctas', 'Errores'], y=list(respuesta[0]), width=0.5)
+    ax = sns.barplot(x=['Correctas', 'Errores'], y=list(respuesta[0]), width=0.5, palette="viridis")
     plt.title('Cantidad de oraciones correctas vs con errores')
     plt.ylabel('Cantidad')
     plt.gca().set_facecolor('white')
@@ -124,7 +124,7 @@ def create_images_dict(batchId, userId):
     dic_reporte["consulta_2"]["e_terminologico"] = cantidades[2]
 
 
-    ax = sns.barplot(x=errores, y=cantidades, width=0.5)
+    ax = sns.barplot(x=errores, y=cantidades, width=0.5, palette="viridis")
     plt.title('Cantidad de errores por tipo')
     plt.ylabel('Cantidad')
     plt.xlabel('Tipo de error')
