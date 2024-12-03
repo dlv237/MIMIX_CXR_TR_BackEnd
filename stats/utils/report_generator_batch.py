@@ -86,7 +86,7 @@ def create_report_for_batch(batch_id, user_id):
     ))
     elements.append(Spacer(1, 10))
     
-    ruta_imagen = os.path.join('utils',  'batch_all_users_query2_explication.png')
+    ruta_imagen = os.path.join('stats', 'utils',  'batch_all_users_query2_explication.png')
     
     imagen = Image(ruta_imagen, width=868 * 0.55, height=318 * 0.55)  # Ajustar dimensiones
     elements.append(imagen)
