@@ -6,3 +6,5 @@ matplotlib
 seaborn
 nltk
 python-dotenv
+json
+base64

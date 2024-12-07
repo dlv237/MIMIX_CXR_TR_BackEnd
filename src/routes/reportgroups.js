@@ -139,12 +139,30 @@ router.post('reportgroups.stats', '/stats', async (ctx) => {
 
   const scriptPath = '/app/stats/report_creator.py';
   console.log('Ruta del script de Python:', scriptPath);
-  const pdfFileName = `report.pdf`;
-  const pdfFilePath = `/app/batch_report_files/batch_${reportGroupId}/user_${userId}/${pdfFileName}`;
-  console.log('Ruta absoluta del archivo PDF:', pdfFilePath);
+  const jsonFileName = `report.json`;
+  const jsonFilePath = `/app/batch_report_files/batch_${reportGroupId}/user_${userId}/${jsonFileName}`;
+  console.log('Ruta absoluta del archivo JSON:', jsonFilePath);
 
   try {
-    // Ejecutar el script de Python de forma asincrónica
+  
+    if (fs.existsSync(jsonFilePath)) {
+      const stats = fs.statSync(jsonFilePath);
+      const lastModified = new Date(stats.mtime);
+      const now = new Date();
+      const diffMinutes = Math.floor((now - lastModified) / 1000 / 60);
+      console.log('Diferencia de minutos:', diffMinutes);
+
+      if (diffMinutes <= 30) {
+        console.log('JSON encontrado en:', jsonFilePath);
+        const jsonData = fs.readFileSync(jsonFilePath, 'utf8');
+        ctx.body = JSON.parse(jsonData);
+        ctx.status = 200;
+        return;
+      }
+    }
+
+
+
     const { stdout, stderr } = await exec(`python ${scriptPath} ${reportGroupId} ${userId}`);
     console.log('stdout:', stdout);
 
@@ -157,7 +175,35 @@ router.post('reportgroups.stats', '/stats', async (ctx) => {
 
     console.log('stdout:', stdout);
 
-    // Verificar si el PDF fue generado correctamente
+    if (fs.existsSync(jsonFilePath)) {
+      console.log('JSON encontrado en:', jsonFilePath);
+      const jsonData = fs.readFileSync(jsonFilePath, 'utf8');
+      ctx.body = JSON.parse(jsonData);
+      ctx.status = 200;
+      
+
+    } else {
+      console.error('PDF no encontrado en:', jsonFilePath);
+      ctx.status = 500;
+      ctx.body = { error: 'El reporte no fue generado correctamente.' };
+    }
+  } catch (error) {
+    console.error('Error ejecutando script:', error);
+    ctx.status = 500;
+    ctx.body = { error: 'Error al generar el reporte.' };
+  }
+});
+
+
+router.get('reportgroups.statsPdf', '/stats/:reportGroupId/:userId', async (ctx) => {
+  const { reportGroupId, userId } = ctx.params;
+
+  const pdfFileName = `report.pdf`;
+  const pdfFilePath = `/app/batch_report_files/batch_${reportGroupId}/user_${userId}/${pdfFileName}`;
+  console.log('Ruta absoluta del archivo PDF:', pdfFilePath);
+
+  try {
+
     if (fs.existsSync(pdfFilePath)) {
       console.log('PDF encontrado en:', pdfFilePath);
       ctx.set('Content-Type', 'application/pdf');
@@ -174,7 +220,7 @@ router.post('reportgroups.stats', '/stats', async (ctx) => {
     ctx.status = 500;
     ctx.body = { error: 'Error al generar el reporte.' };
   }
-});
-
+}
+);
 
 module.exports = router;
