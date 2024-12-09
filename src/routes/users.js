@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const Router = require('koa-router');
 const router = new Router();
+const argon2 = require('argon2');
 
 router.get("users.list","/",async(ctx)=>{
     try{
@@ -143,6 +144,29 @@ router.delete('users.deleteAll', '/', async (ctx) => {
     }
 });
 
+router.put('users.update', '/update', async (ctx) => {
 
+    try {
+
+      const user = await ctx.orm.User.findOne({ where: { email: ctx.request.body.email } });
+      if (user) {
+        const { firstName, lastName, email, role, password } = ctx.request.body;
+
+        const hashedPassword = await argon2.hash(password);
+
+        await user.update({ firstName, lastName, email, role, password: hashedPassword });
+        ctx.status = 200;
+        ctx.body = user;
+      } else {
+        ctx.status = 404;
+        ctx.body = { error: 'Usuario no encontrado.' };
+      }
+    }
+    catch (error) {
+      ctx.status = 500;
+    }
+
+  }
+);
   
 module.exports = router;
