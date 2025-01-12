@@ -33,7 +33,7 @@ router.get('comments.translatedSentenceId', '/:translatedSentenceId', async (ctx
     try {
         const decodedToken = jwt.verify(accessToken, process.env.JWT_SECRET);
         const userId = decodedToken.userId;
-        const comments = await ctx.orm.Comment.findUnique({
+        const comments = await ctx.orm.Comment.findOne({
             where: {
                 translatedSentenceId: ctx.params.translatedSentenceId,
                 userId: userId
