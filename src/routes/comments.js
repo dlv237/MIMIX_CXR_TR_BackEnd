@@ -14,16 +14,36 @@ router.get('comments.list', '/', async (ctx) => {
 });
 
 router.get('comments.translatedSentenceId', '/:translatedSentenceId', async (ctx) => {
+    const token = ctx.request.headers.authorization;
+    if (!token) {
+        ctx.status = 401; // No autorizado
+        ctx.body = 'Token no proporcionado';
+        return;
+    }
+
+    const tokenParts = token.split(' ');
+    if (tokenParts.length !== 2 || tokenParts[0] !== 'Bearer') {
+        ctx.status = 401;
+        ctx.body = 'Token mal formateado';
+        return;
+    }
+
+    const accessToken = tokenParts[1];
+    
     try {
+        const decodedToken = jwt.verify(accessToken, process.env.JWT_SECRET);
+        const userId = decodedToken.userId;
         const comments = await ctx.orm.Comment.findUnique({
             where: {
-                translatedSentenceId: ctx.params.translatedSentenceId
+                translatedSentenceId: ctx.params.translatedSentenceId,
+                userId: userId
             }
         });
         ctx.status = 200;
         ctx.body = comments;
     } catch (error) {
         ctx.status = 400;
+        console.log(error);
         ctx.body = { error: 'No se pudieron obtener los comentarios.' };
     }
 });
