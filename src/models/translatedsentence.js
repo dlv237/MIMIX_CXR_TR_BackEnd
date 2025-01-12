@@ -18,7 +18,8 @@ module.exports = (sequelize, DataTypes) => {
     reportId: DataTypes.INTEGER,
     array_index: DataTypes.INTEGER,
     text: DataTypes.TEXT,
-    translated_sentence_type: DataTypes.STRING
+    translated_sentence_type: DataTypes.STRING,
+    hasComments: DataTypes.BOOLEAN,
   }, {
     sequelize,
     modelName: 'TranslatedSentence',

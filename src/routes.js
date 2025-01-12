@@ -32,5 +32,7 @@ router.use('/reportgroups', reportgroups.routes());
 router.use('/userreportgroups', userreportgroups.routes());
 router.use('/reportgroupreports', reportgroupreports.routes());
 router.use('/usertranslatedsentences', usertranslatedsentences.routes());  
+router.use('/comments', require('./routes/comments.js').routes());
+router.use('/translatedsentences', require('./routes/translatedsentences.js').routes());
 
 module.exports = router;
