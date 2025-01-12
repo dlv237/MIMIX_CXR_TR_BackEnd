@@ -12,6 +12,8 @@ const corrections = require('./routes/corrections');
 const usertranslatedsentences = require('./routes/usertranslatedsentences')
 const authRoutes = require('./routes/authentication.js')
 const dotenv = require('dotenv');
+const comments = require('./routes/comments.js');
+const translatedsentences = require('./routes/translatedsentences.js');
 const jwtMiddleware = require('koa-jwt')
 
 dotenv.config();
@@ -32,7 +34,7 @@ router.use('/reportgroups', reportgroups.routes());
 router.use('/userreportgroups', userreportgroups.routes());
 router.use('/reportgroupreports', reportgroupreports.routes());
 router.use('/usertranslatedsentences', usertranslatedsentences.routes());  
-router.use('/comments', require('./routes/comments.js').routes());
-router.use('/translatedsentences', require('./routes/translatedsentences.js').routes());
+router.use('/comments', comments.routes());
+router.use('/translatedsentences', translatedsentences.routes());
 
 module.exports = router;
