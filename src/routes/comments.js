@@ -48,7 +48,7 @@ router.get('comments.translatedSentenceId', '/:translatedSentenceId', async (ctx
     }
 });
 
-router.patch('comments.update', '/:id', async (ctx) => {
+router.put('comments.update', '/:id', async (ctx) => {
     const token = ctx.request.headers.authorization;
     const commentAttributes = ctx.request.body;
     if (!token) {
