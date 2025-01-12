@@ -108,6 +108,7 @@ router.delete('comments.delete', '/:id', async (ctx) => {
 
 router.post('comments.create', '/', async (ctx) => {
     const token = ctx.request.headers.authorization;
+    console.log(token);
     const commentAttributes = ctx.request.body;
     if (!token) {
         ctx.status = 401; // No autorizado
