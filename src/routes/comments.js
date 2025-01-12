@@ -106,4 +106,77 @@ router.delete('comments.delete', '/:id', async (ctx) => {
     }
 });
 
+router.post('comments.create', '/', async (ctx) => {
+    const token = ctx.request.headers.authorization;
+    const commentAttributes = ctx.request.body;
+    if (!token) {
+        ctx.status = 401; // No autorizado
+        ctx.body = 'Token no proporcionado';
+        return;
+    }
+
+    const tokenParts = token.split(' ');
+    if (tokenParts.length !== 2 || tokenParts[0] !== 'Bearer') {
+        ctx.status = 401;
+        ctx.body = 'Token mal formateado';
+        return;
+    }
+
+    const accessToken = tokenParts[1];
+
+    try {
+        const decodedToken = jwt.verify(accessToken, process.env.JWT_SECRET);
+        const userId = decodedToken.userId;
+
+        commentAttributes.userId = userId;
+
+        const comment = await ctx.orm.Comment.create(commentAttributes);
+        ctx.body = comment;
+        ctx.status = 201;
+    } catch (error) {
+        ctx.body = error;
+        ctx.status = 400;
+    }
+});
+
+router.patch('comments.update', '/:id', async (ctx) => {
+    const token = ctx.request.headers.authorization;
+    const commentAttributes = ctx.request.body;
+    if (!token) {
+        ctx.status = 401; // No autorizado
+        ctx.body = 'Token no proporcionado';
+        return;
+    }
+
+    const tokenParts = token.split(' ');
+    if (tokenParts.length !== 2 || tokenParts[0] !== 'Bearer') {
+        ctx.status = 401;
+        ctx.body = 'Token mal formateado';
+        return;
+    }
+
+    const accessToken = tokenParts[1];
+
+    try {
+        const decodedToken = jwt.verify(accessToken, process.env.JWT_SECRET);
+        const userId = decodedToken.userId;
+
+        const comment = await ctx.orm.Comment.findOne({
+            where: {
+                userId: userId,
+                id: ctx.params.id,
+            },
+        });
+
+        if (comment) {
+            await comment.update(commentAttributes);
+            ctx.body = comment;
+            ctx.status = 200;
+        }
+    } catch (error) {
+        ctx.body = error;
+        ctx.status = 400;
+    }
+});
+
 module.exports = router;
