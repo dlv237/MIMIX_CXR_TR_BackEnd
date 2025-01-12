@@ -105,3 +105,5 @@ router.delete('comments.delete', '/:id', async (ctx) => {
         ctx.status = 400;
     }
 });
+
+module.exports = router;
