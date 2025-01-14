@@ -77,6 +77,11 @@ router.put('comments.update', '/:id', async (ctx) => {
             },
         });
 
+        await ctx.orm.TranslatedSentence.update(
+            { hasComments: true },
+            { where: { id: comment.translatedSentenceId } }
+        )
+        
         if (comment) {
             await comment.update(commentAttributes);
             ctx.body = comment;
@@ -152,6 +157,10 @@ router.post('comments.create', '/', async (ctx) => {
         commentAttributes.userId = userId;
 
         const comment = await ctx.orm.Comment.create(commentAttributes);
+        await ctx.orm.TranslatedSentence.update(
+            { hasComments: true },
+            { where: { id: comment.translatedSentenceId } }
+        )
         ctx.body = comment;
         ctx.status = 201;
     } catch (error) {
