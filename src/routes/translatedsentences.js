@@ -47,9 +47,24 @@ router.get('translatedsentences.getById', '/:id', async (ctx) => {
     });
 
     const reportGroupId = reportGroupReport.reportGroupId;
+    const reportIds = reportgroupreports.map((report) => report.reportId);
+    const reports = await ctx.orm.Report.findAll({
+      where: {
+        id: reportIds
+      }
+    });
+
+    let indexReport = 0;
+    for (const report of reports) {
+      indexReport++;
+      if (report.id === sentence.reportId) {
+        break;
+      }
+    }
+
 
     ctx.status = 200;
-    ctx.body = {sentence, translatedSentence, reportGroupId };
+    ctx.body = {sentence, translatedSentence, reportGroupId, indexReport };
   } catch (error) {
     console.error('Error al obtener la TranslatedSentence por ID:', error);
     ctx.status = 500;
