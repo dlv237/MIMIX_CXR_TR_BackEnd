@@ -48,7 +48,7 @@ router.get('translatedsentences.getById', '/:id', async (ctx) => {
 
     console.log('reportGroupReport:', reportGroupReport);
 
-    const reportGroupId = reportGroupReport.reportGroupId;
+    const reportGroupId = reportGroupReport[0].reportGroupId;
 
     console.log('reportGroupId:', reportGroupId);
 
