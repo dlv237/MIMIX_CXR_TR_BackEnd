@@ -81,6 +81,7 @@ router.get('reportgroupreports.list', '/:id', async (ctx) => {
       }
     });
     const reportIds = reportgroupreports.map((report) => report.reportId);
+    console.log("----ReportsIds: ",reportIds);
     const reports = await ctx.orm.Report.findAll({
       where: {
         id: reportIds
