@@ -46,20 +46,29 @@ router.get('translatedsentences.getById', '/:id', async (ctx) => {
       }
     });
 
-    const reportGroupReports = await ctx.orm.ReportGroupReport.findAll({
-      where: {
-        reportGroupId: reportGroupReport.reportGroupId
-      }
-    });
+    console.log('reportGroupReport:', reportGroupReport);
 
     const reportGroupId = reportGroupReport.reportGroupId;
 
+    const reportGroupReports = await ctx.orm.ReportGroupReport.findAll({
+      where: {
+        reportGroupId: reportGroupId
+      }
+    });
+
+    console.log('reportGroupReports:', reportGroupReports);
+
     const reportIds = reportGroupReports.map((report) => report.reportId);
+
+    console.log('reportIds:', reportIds);
+
     const reports = await ctx.orm.Report.findAll({
       where: {
         id: reportIds
       }
     });
+
+    console.log('reports:', reports);
 
     let indexReport = 0;
     for (const report of reports) {
@@ -69,6 +78,7 @@ router.get('translatedsentences.getById', '/:id', async (ctx) => {
       }
     }
 
+    console.log('indexReport:', indexReport);
 
     ctx.status = 200;
     ctx.body = { sentence, translatedSentence, reportGroupId, indexReport };
