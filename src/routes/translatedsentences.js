@@ -40,13 +40,14 @@ router.get('translatedsentences.getById', '/:id', async (ctx) => {
       }
     });
 
-    const reportGroupReport = await ctx.orm.ReportGroupReport.findOne({
+    const reportGroupReport = await ctx.orm.ReportGroupReport.findAll({
       where: {
         reportId: sentence.reportId
       }
     });
 
     const reportGroupId = reportGroupReport.reportGroupId;
+
     const reportIds = reportGroupReport.map((report) => report.reportId);
     const reports = await ctx.orm.Report.findAll({
       where: {
