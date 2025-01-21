@@ -10,7 +10,8 @@ import sys
 import numpy as np
 from html2image import Html2Image
 from PIL import Image
-import imgkit
+from weasyprint import HTML
+from pdf2image import convert_from_path
 
 from utils.utils import execute_query_via_ssh, create_directory, wrap_text, highlight_text
 
@@ -391,35 +392,56 @@ def create_images_dict(batchId, userId):
     def highlight_row(row):
         color = 'background-color: #d3f8d3;' if row['id_oracion'] in highlight_ids else 'background-color: #FFFFFF;'
         return [color] * len(row)
-    
+
     # Estilizar la tabla con Pandas Styler
     styled_df = df_respuesta.style.apply(highlight_row, axis=1).set_table_styles([
-    {'selector': 'th', 'props': [('background-color', '#add8e6'), ('color', 'black'), ('font-weight', 'bold')]},
-    {'selector': 'td', 'props': [('padding', '5px'), ('text-align', 'left')]},
-    {'selector': 'table', 'props': [('width', '1800'), ('margin', 'auto')]},  # Ancho total de la tabla
-    {'selector': 'td:nth-child(3)', 'props': [
-        ('width', '600px'),  # Ancho ajustado para la columna "oración"
-        ('word-wrap', 'break-word'),
-        ('word-break', 'break-word'),
-        ('white-space', 'normal')  # Permitir saltos de línea en el texto
-    ]}
-], overwrite=False).to_html()
+        {'selector': 'th', 'props': [('background-color', '#add8e6'), ('color', 'black'), ('font-weight', 'bold')]},
+        {'selector': 'td', 'props': [('padding', '5px'), ('text-align', 'left')]},
+        {'selector': 'table', 'props': [('width', '1800'), ('margin', 'auto')]},  # Ancho total de la tabla
+        {'selector': 'td:nth-child(3)', 'props': [
+            ('width', '600px'),  # Ancho ajustado para la columna "oración"
+            ('word-wrap', 'break-word'),
+            ('word-break', 'break-word'),
+            ('white-space', 'normal')  # Permitir saltos de línea en el texto
+        ]}
+    ], overwrite=False)
+
+    # Convertir el Styler a HTML
+    html_table = styled_df.to_html()
+
+    # Añadir el estilo para evitar el recorte
+    custom_style = """
+    <style>
+    @page {
+        size: A3 landscape; /* Página A3 en horizontal */
+        margin: 20px;
+    }
+    table {
+        width: 100%;
+    }
+    </style>
+    """
+    html_table = custom_style + html_table
 
     # Guardar el HTML de la tabla
-    html_file = os.path.join(path,"images", "tabla_resaltada.html")
-    with open(html_file, "w") as f:
-        f.write(styled_df)
+    html_file = os.path.join(path, "images", "tabla_resaltada.html")
+    with open(html_file, "w", encoding="utf-8") as f:
+        f.write(html_table)
 
-    # Usar Html2Image para convertir el HTML en una imagen PNG
-    hti = imgkit.from_file(html_file, os.path.join(path, "images", "tabla_resaltada_full.png"))
+    # Usar WeasyPrint para convertir el HTML en PDF
+    pdf_file = os.path.join(path, "images", "tabla_resaltada.pdf")
+    HTML(html_file).write_pdf(pdf_file)
 
+    # Convertir el PDF a una imagen PNG usando Pillow
+    
+    images = convert_from_path(pdf_file)
+
+    images = images[0]  
+    
     # Recortar la tabla usando Pillow
-    image = Image.open(os.path.join(path,"images", "tabla_resaltada_full.png"))
-    cropped_image = image.crop(image.getbbox())  # Recortar para eliminar espacio en blanco
-    cropped_image.save(os.path.join(path,"images", "tabla_oraciones.png"))
-    
-    
-    
+    cropped_image = images.crop(images.getbbox())  # Recortar para eliminar espacio en blanco
+    cropped_image.save(os.path.join(path, "images", f"tabla_oraciones.png"))
+
 
 
     

@@ -10,3 +10,5 @@ Pillow
 html2image
 jinja2
 imgkit
+pdf2image
+weasyprint
