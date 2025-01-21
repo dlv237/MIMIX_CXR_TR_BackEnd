@@ -70,6 +70,16 @@ def create_directory(batch, user):
 def wrap_text(text, width=100):
     return '\n'.join(textwrap.wrap(text, width))
 
+def highlight_text(text, sentence_id, words_to_highlight):
+    caracteres = [".", ",", ";", ":", " "]
+    for word in words_to_highlight[sentence_id]:
+        
+        for caracter in caracteres:
+            if word + caracter in text:
+                text = text.replace(word + caracter, f"<span style='color:red;font-weight:bold;'>{word + caracter}</span>")
+        
+    return text
+
 if __name__ == "__main__":
     print("Uso: python report_creator.py <batch_id: int> <user_id: int or all>")
     sys.exit(1)
