@@ -10,6 +10,7 @@ import sys
 import numpy as np
 from html2image import Html2Image
 from PIL import Image
+import imgkit
 
 from utils.utils import execute_query_via_ssh, create_directory, wrap_text, highlight_text
 
@@ -410,8 +411,7 @@ def create_images_dict(batchId, userId):
         f.write(styled_df)
 
     # Usar Html2Image para convertir el HTML en una imagen PNG
-    hti = Html2Image(output_path=os.path.join(path,"images"), browser_executable='/usr/bin/google-chrome')
-    hti.screenshot(html_file=html_file, save_as="tabla_resaltada_full.png")
+    hti = imgkit.from_file(html_file, os.path.join(path, "images", "tabla_resaltada_full.png"))
 
     # Recortar la tabla usando Pillow
     image = Image.open(os.path.join(path,"images", "tabla_resaltada_full.png"))
