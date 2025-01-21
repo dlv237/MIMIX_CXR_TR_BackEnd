@@ -8,8 +8,10 @@ import os
 import json
 import sys
 import numpy as np
+from html2image import Html2Image
+from PIL import Image
 
-from utils.utils import execute_query_via_ssh, create_directory, wrap_text
+from utils.utils import execute_query_via_ssh, create_directory, wrap_text, highlight_text
 
 
 
@@ -75,8 +77,8 @@ def create_images_dict(batchId, userId):
     ax.legend(title='Tipo de Error', fontsize=10, title_fontsize=12)
 
     # Configurar el eje Y para mostrar solo enteros y marcas de 1 en 1
-    ax.yaxis.set_major_locator(ticker.MultipleLocator(1))  # Incrementos de 1 en 1
-    ax.yaxis.set_major_formatter(ticker.ScalarFormatter(useOffset=False))
+    #ax.yaxis.set_major_locator(ticker.MultipleLocator(1))  # Incrementos de 1 en 1
+    #ax.yaxis.set_major_formatter(ticker.ScalarFormatter(useOffset=False))
 
     plt.tight_layout()
     plt.savefig(os.path.join(path, "images", "error_tipo_batch.png"), bbox_inches='tight', dpi=300, facecolor='white')
@@ -181,8 +183,15 @@ def create_images_dict(batchId, userId):
         # Convertir a DataFrame
     df = pd.DataFrame(respuesta, columns=['user_id', 'error_type', 'word'])
 
+    highlight_words_stop_words = set(df["word"].to_list())
+    
+    highlight_words = highlight_words_stop_words - stop_words
+
+
     # Contar la frecuencia de palabras por tipo de error
     word_counts = df.groupby(['word', 'error_type']).size().unstack(fill_value=0)
+    
+    
 
     # Obtener las 15 palabras más repetidas
     top_words = word_counts.sum(axis=1).nlargest(15).index
@@ -226,27 +235,76 @@ def create_images_dict(batchId, userId):
 
     # Crear una nueva columna con la combinación (palabra, oración)
     df['word_sentence'] = df.apply(lambda x: (x['word'], x['sentence_id']), axis=1)
+    df= df[~df["word_sentence"].apply(lambda x: x[0] in stop_words)]
+
+
 
     # Contar la frecuencia de cada tipo de error para cada (palabra, oración)
     word_sentence_counts = df.groupby(['word_sentence', 'error_type']).size().unstack(fill_value=0)
+    
+    
+   
 
     # Obtener las 15 combinaciones (palabra, oración) más repetidas
     top_word_sentences = word_sentence_counts.sum(axis=1).nlargest(15).index
     top_word_sentence_counts = word_sentence_counts.loc[top_word_sentences]
-
-    # Graficar barras apiladas
-    top_word_sentence_counts.plot(kind='bar', stacked=True, figsize=(12, 6), colormap='viridis')
-
-    # Personalizar el gráfico
-    plt.title('Top 15 Palabras por Oración y Tipo de Error', fontsize=16)
-    plt.xlabel('Palabra y Oración', fontsize=12)
-    plt.ylabel('Frecuencia', fontsize=12)
-    plt.xticks(rotation=45, fontsize=10)
-    plt.legend(title='Tipo de Error', fontsize=10)
-    plt.tight_layout()
     
+  
+
+
+    ## Graficar barras apiladas
+    #top_word_sentence_counts.plot(kind='bar', stacked=True, figsize=(12, 6), colormap='viridis')
+#
+    ## Personalizar el gráfico
+    #plt.title('Top 15 Palabras por Oración y Tipo de Error', fontsize=16)
+    #plt.xlabel('Palabra y Oración', fontsize=12)
+    #plt.ylabel('Frecuencia', fontsize=12)
+    #plt.xticks(rotation=45, fontsize=10)
+    #plt.legend(title='Tipo de Error', fontsize=10)
+    #plt.tight_layout()
+    #
+    #plt.savefig(os.path.join(path,"images", "barras_batch_palabra_oracion.png") , bbox_inches='tight', dpi=300, facecolor='white')
+    #plt.clf()
+    
+   
+    top_word_sentence_counts['frequency'] = top_word_sentence_counts[['functional', 'grammatical', 'terminological']].sum(axis=1)
+    
+    
+    
+    # Crear el heatmap con las frecuencias
+    plt.figure(figsize=(10, 8))
+    
+    sns.heatmap(
+    top_word_sentence_counts[['functional', 'grammatical', 'terminological', 'frequency']], 
+    annot=True, cmap="YlGnBu", cbar=True, fmt="d",
+    annot_kws={"color": "black", "fontsize": 10}  # Cambia el color y tamaño del texto
+)
+    plt.title("Grilla de frecuencias por tipo de error")
+    plt.ylabel("Tuplas")
+    plt.yticks(range(len(top_word_sentence_counts)), top_word_sentence_counts.index, rotation=0)  # Etiquetas de filas
+    plt.xlabel("Tipos de error")
+    plt.tight_layout()
     plt.savefig(os.path.join(path,"images", "barras_batch_palabra_oracion.png") , bbox_inches='tight', dpi=300, facecolor='white')
     plt.clf()
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     ##########################################################
@@ -256,6 +314,11 @@ def create_images_dict(batchId, userId):
     top_sentence_ids = top_sentences.index.tolist()
     
     errors_per_sentence = df['sentence_id'].value_counts().to_dict()
+    
+    df_15_sentences = df[df["sentence_id"].isin(top_sentence_ids)][['sentence_id', 'word']]
+    sentence_dict = df_15_sentences.groupby('sentence_id')['word'].apply(list).to_dict()
+    
+    
     
     
     
@@ -311,55 +374,56 @@ def create_images_dict(batchId, userId):
     """
     
     respuesta = [(i[0], i[1], errors_per_sentence[i[0]], i[2]) for i in execute_query_via_ssh(consulta)]
-    
-    
     # Crear DataFrame y resaltar IDs
     df_respuesta = pd.DataFrame(respuesta, columns=['id_oracion', 'oracion', 'num_errores', 'id_reporte'])
     highlight_ids = {item[1] for item in top_word_sentences}
+    
+    
+    
+    # Aplicar el resaltado de palabras
+    df_respuesta['oracion'] = df_respuesta.apply(
+        lambda row: highlight_text(row['oracion'], row["id_oracion"], sentence_dict), axis=1
+        )
+    
+    
+    
+    def highlight_row(row):
+        color = 'background-color: #d3f8d3;' if row['id_oracion'] in highlight_ids else 'background-color: #FFFFFF;'
+        return [color] * len(row)
+    
+    # Estilizar la tabla con Pandas Styler
+    styled_df = df_respuesta.style.apply(highlight_row, axis=1).set_table_styles([
+    {'selector': 'th', 'props': [('background-color', '#add8e6'), ('color', 'black'), ('font-weight', 'bold')]},
+    {'selector': 'td', 'props': [('padding', '5px'), ('text-align', 'left')]},
+    {'selector': 'table', 'props': [('width', '1800'), ('margin', 'auto')]},  # Ancho total de la tabla
+    {'selector': 'td:nth-child(3)', 'props': [
+        ('width', '600px'),  # Ancho ajustado para la columna "oración"
+        ('word-wrap', 'break-word'),
+        ('word-break', 'break-word'),
+        ('white-space', 'normal')  # Permitir saltos de línea en el texto
+    ]}
+], overwrite=False).render()
 
-    # Aplicar envoltura de texto a las oraciones
-    df_respuesta['oracion'] = df_respuesta['oracion'].apply(lambda x: wrap_text(x, width=100))
+    # Guardar el HTML de la tabla
+    html_file = os.path.join(path,"images", "tabla_resaltada.html")
+    with open(html_file, "w") as f:
+        f.write(styled_df)
 
-    # Crear figura y ejes
-    fig, ax = plt.subplots(figsize=(14, 8))
-    ax.axis('off')
-    ax.axis('tight')
+    # Usar Html2Image para convertir el HTML en una imagen PNG
+    hti = Html2Image(output_path=os.path.join(path,"images"))
+    hti.screenshot(html_file=html_file, save_as="tabla_resaltada_full.png")
 
-    # Crear los datos para la tabla
-    data = df_respuesta.sort_values(by='num_errores', ascending=False).head(15)
-    table_data = data[['id_oracion', 'id_reporte', 'oracion', 'num_errores']].values.tolist()
-
-    # Crear tabla
-    table = plt.table(cellText=table_data, colLabels=['ID Oración', 'ID Reporte', 'Oración', 'N° Errores'], loc='center', cellLoc='left')
-
-    # Ajustar ancho de las columnas manualmente
-    for (i, j), cell in table.get_celld().items():
-        if j == 0:  # Columna "ID Oración"
-            cell.set_width(0.08)
-        elif j == 1:  # Columna "ID Reporte"
-            cell.set_width(0.08)
-        elif j == 3:  # Columna "N° Errores"
-            cell.set_width(0.08)
-        else:  # Columna "Oración"
-            cell.set_width(0.76)
-
-    # Destacar filas
-    for i, row in enumerate(data.itertuples(index=False)):
-        if row.id_oracion in highlight_ids:
-            for j in range(4):
-                table[(i + 1, j)].set_facecolor('#d3f8d3')  # Color suave para destacar
-
-    # Ajustar formato
-    table.auto_set_font_size(False)
-    table.set_fontsize(10)
-    table.scale(1, 4.5)  # Escalar filas para mayor espacio
-
-    plt.savefig(os.path.join(path, "images", "tabla_oraciones.png"), bbox_inches='tight', dpi=300, facecolor='white')
-    plt.clf()
+    # Recortar la tabla usando Pillow
+    image = Image.open(os.path.join(path,"images", "tabla_resaltada_full.png"))
+    cropped_image = image.crop(image.getbbox())  # Recortar para eliminar espacio en blanco
+    cropped_image.save(os.path.join(path,"images", "tabla_oraciones.png"))
+    
+    
+    
 
 
     
-    
+    ## La tabla se tiene que llamar tabla_oraciones.png
     
     
     ############# fin tabla de oraciones #############
@@ -432,6 +496,8 @@ def create_images_dict(batchId, userId):
     
     with open(os.path.join(path, "dic_reporte.json") , 'w') as archivo_json:
         json.dump(dic_reporte, archivo_json, indent=4)
+        
+    
     
     return dic_reporte   
 

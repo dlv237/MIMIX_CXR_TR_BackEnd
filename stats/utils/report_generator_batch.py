@@ -213,7 +213,7 @@ def create_report_for_batch(batch_id, user_id):
     ))
     elements.append(Spacer(1, 10))
     
-    ruta_imagen = os.path.join('stats', 'utils',  'batch_all_users_query2_explication.png')
+    ruta_imagen = os.path.join('utils',  'batch_all_users_query2_explication.png')
     
     imagen = Image(ruta_imagen, width=868 * 0.55, height=318 * 0.55)  # Ajustar dimensiones
     elements.append(imagen)
@@ -294,7 +294,7 @@ def create_report_for_batch(batch_id, user_id):
     
     ruta_grafico = dic_rep['image_paths'][3]
 
-    imagen = Image(ruta_grafico, width=3554*0.14, height=1766*0.14)  # Ajustar dimensiones
+    imagen = Image(ruta_grafico, width=3554*0.1, height=1766*0.14)  # Ajustar dimensiones
     elements.append(imagen)
     
     elements.append(Spacer(1, 20))
@@ -302,7 +302,7 @@ def create_report_for_batch(batch_id, user_id):
 
     # Texto debajo del gráfico (centrado)
     elements.append(Paragraph(
-        "Gráfico 4: Gráfico de barras apiladas con las 15 palabras de oración más repetidas del batch, junto a sus tipos de error",
+        "Gráfico 4: Grilla con las 15 palabras de oración más repetidas del batch, junto a sus tipos de error",
         style_centered
     ))
     
