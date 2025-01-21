@@ -410,7 +410,7 @@ def create_images_dict(batchId, userId):
         f.write(styled_df)
 
     # Usar Html2Image para convertir el HTML en una imagen PNG
-    hti = Html2Image(output_path=os.path.join(path,"images"))
+    hti = Html2Image(output_path=os.path.join(path,"images"), browser_executable='/path/to/chrome')
     hti.screenshot(html_file=html_file, save_as="tabla_resaltada_full.png")
 
     # Recortar la tabla usando Pillow
