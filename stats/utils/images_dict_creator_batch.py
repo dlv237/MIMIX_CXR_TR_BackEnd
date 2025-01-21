@@ -402,7 +402,7 @@ def create_images_dict(batchId, userId):
         ('word-break', 'break-word'),
         ('white-space', 'normal')  # Permitir saltos de línea en el texto
     ]}
-], overwrite=False).render()
+], overwrite=False).to_html()
 
     # Guardar el HTML de la tabla
     html_file = os.path.join(path,"images", "tabla_resaltada.html")
