@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 dic_ssh = {
-  "ssh_host" : 'maicolpue.ing.puc.cl',
+  "ssh_host" : 'calfuco.ing.puc.cl',
   "ssh_username" : os.getenv('MAICOLPUE_USER'),
   "ssh_password" : os.getenv('MAICOLPUE_PASSWORD')
 }
