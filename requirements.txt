@@ -6,5 +6,5 @@ matplotlib
 seaborn
 nltk
 python-dotenv
-PIL
+Pillow
 html2image
