@@ -209,4 +209,27 @@ router.patch('comments.update', '/:id', async (ctx) => {
     }
 });
 
+router.patch('comments.stateUdate', '/:id/state', async (ctx) => {
+    const commentAttributes = ctx.request.body;
+
+    try {
+
+        const comment = await ctx.orm.Comment.findOne({
+            where: {
+                id: ctx.params.id,
+            },
+        });
+
+        if (comment) {
+            await comment.update(commentAttributes);
+            ctx.body = comment;
+            ctx.status = 200;
+        }
+
+    } catch (error) {
+        ctx.body = error;
+        ctx.status = 400;
+    }
+});
+
 module.exports = router;
