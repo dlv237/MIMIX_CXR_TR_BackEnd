@@ -169,36 +169,70 @@ router.post('comments.create', '/', async (ctx) => {
     }
 });
 
-
-router.patch('/:id/state', async (ctx) => {
+router.patch('comments.update', '/:id', async (ctx) => {
+    const token = ctx.request.headers.authorization;
     const commentAttributes = ctx.request.body;
-  
-    try {
-      const comment = await ctx.orm.Comment.findOne({
-        where: {
-          id: ctx.params.id,
-        },
-      });
-
-      console.log(comment)
-  
-      if (comment) {
-        const result = await comment.update(commentAttributes);
-        if (result[0] === 1) { // Check if 1 row was updated
-          ctx.body = comment;
-          ctx.status = 200;
-        } else {
-          ctx.body = { message: 'Failed to update comment' };
-          ctx.status = 400;
-        }
-      } else {
-        ctx.body = { message: 'Comment not found' };
-        ctx.status = 404;
-      }
-    } catch (error) {
-      ctx.body = error;
-      ctx.status = 500;
+    if (!token) {
+        ctx.status = 401; // No autorizado
+        ctx.body = 'Token no proporcionado';
+        return;
     }
-  });
+
+    const tokenParts = token.split(' ');
+    if (tokenParts.length !== 2 || tokenParts[0] !== 'Bearer') {
+        ctx.status = 401;
+        ctx.body = 'Token mal formateado';
+        return;
+    }
+
+    const accessToken = tokenParts[1];
+
+    try {
+        const decodedToken = jwt.verify(accessToken, process.env.JWT_SECRET);
+        const userId = decodedToken.userId;
+
+        const comment = await ctx.orm.Comment.findOne({
+            where: {
+                userId: userId,
+                id: ctx.params.id,
+            },
+        });
+
+        if (comment) {
+            await comment.update(commentAttributes);
+            ctx.body = comment;
+            ctx.status = 200;
+        }
+    } catch (error) {
+        ctx.body = error;
+        ctx.status = 400;
+    }
+});
+
+router.patch('comments.state','/state/:id', async (ctx) => {
+    const { state } = ctx.request.body;
+
+    try {
+        const comment = await ctx.orm.Comment.findOne({
+            where: {
+                id: ctx.params.id,
+            },
+        });
+
+        if (comment) {
+            await comment.update({ state });
+            ctx.body = comment;
+            ctx.status = 200;
+        } else {
+            ctx.status = 404;
+            ctx.body = { error: 'Comentario no encontrado' };
+        }
+
+    } catch (error) {
+        console.error(error);
+        ctx.body = { error: 'Error al actualizar el comentario' };
+        ctx.status = 400;
+    }
+});
 
 module.exports = router;
