@@ -209,27 +209,28 @@ router.patch('comments.update', '/:id', async (ctx) => {
     }
 });
 
-router.patch('comments.stateUdate', '/:id/state', async (ctx) => {
-    const commentAttributes = ctx.request.body;
+router.patch('comments.state','/comments/:id/state', async (ctx) => {
+    const { state } = ctx.request.body;
 
     try {
-
         const comment = await ctx.orm.Comment.findOne({
             where: {
                 id: ctx.params.id,
             },
         });
 
-        console.log(comment)
-
         if (comment) {
-            await comment.update(commentAttributes);
+            await comment.update({ state });
             ctx.body = comment;
             ctx.status = 200;
+        } else {
+            ctx.status = 404;
+            ctx.body = { error: 'Comentario no encontrado' };
         }
 
     } catch (error) {
-        ctx.body = error;
+        console.error(error);
+        ctx.body = { error: 'Error al actualizar el comentario' };
         ctx.status = 400;
     }
 });
