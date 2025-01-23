@@ -170,7 +170,7 @@ router.post('comments.create', '/', async (ctx) => {
 });
 
 
-router.patch('comments.stateUdate', '/:id/state', async (ctx) => {
+router.put('comments.stateUdate', '/:id/state', async (ctx) => {
     const commentAttributes = ctx.request.body;
   
     try {
