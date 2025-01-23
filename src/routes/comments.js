@@ -220,6 +220,8 @@ router.patch('comments.stateUdate', '/:id/state', async (ctx) => {
             },
         });
 
+        console.log(comment)
+
         if (comment) {
             await comment.update(commentAttributes);
             ctx.body = comment;
