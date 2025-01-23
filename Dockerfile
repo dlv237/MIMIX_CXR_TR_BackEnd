@@ -23,7 +23,7 @@ RUN . /app/venv/bin/activate && pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Comando para ejecutar la aplicación y los scripts
-CMD ["sh", "-c", "sleep 5 && yarn sequelize db:migrate && yarn sequelize-cli db:seed:all && . /app/venv/bin/activate && yarn dev"]
+CMD ["sh", "-c", "sleep 5 && yarn sequelize db:migrate && . /app/venv/bin/activate && yarn dev"]
 
 # Exponer el puerto de la aplicación
 EXPOSE 3000
