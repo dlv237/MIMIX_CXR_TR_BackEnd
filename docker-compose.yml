@@ -18,23 +18,29 @@ services:
     ports:
       - "3000:3000"
     depends_on: 
-      - mimic_db 
+      - ssh_tunnel
     environment:
       PORT: ${PORT}
       DB_NAME: ${DB_NAME}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
-      DB_HOST: ${DB_HOST}
-  mimic_db: 
-    image: postgres 
-    container_name: mimic_db
+      DB_HOST: ssh_tunnel
+      DB_PORT: 5445
+    networks:
+      - my_network
+  ssh_tunnel:
+    build:
+      context: ./ssh
+      dockerfile: Dockerfile
+    container_name: ssh_tunnel
+    restart: unless-stopped
     ports:
-      - "5445:5432"
-    environment:
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
-    volumes:
-      - mimic_db-volume:/var/lib/postgresql/data 
-volumes: 
-  mimic_db-volume:
+      - "5445:5445"
+    stdin_open: true
+    tty: true
+    networks:
+      - my_network
+
+networks:
+  my_network:
+    driver: bridge
