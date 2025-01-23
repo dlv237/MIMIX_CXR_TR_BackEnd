@@ -209,7 +209,7 @@ router.patch('comments.update', '/:id', async (ctx) => {
     }
 });
 
-router.patch('comments.state','/comments/:id/state', async (ctx) => {
+router.patch('comments.state','/:id/state', async (ctx) => {
     const { state } = ctx.request.body;
 
     try {
