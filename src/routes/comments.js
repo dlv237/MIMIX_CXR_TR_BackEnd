@@ -36,7 +36,6 @@ router.get('comments.translatedSentenceId', '/:translatedSentenceId', async (ctx
         const comments = await ctx.orm.Comment.findOne({
             where: {
                 translatedSentenceId: ctx.params.translatedSentenceId,
-                userId: userId
             }
         });
         ctx.status = 200;
@@ -72,7 +71,6 @@ router.put('comments.update', '/:id', async (ctx) => {
 
         const comment = await ctx.orm.Comment.findOne({
             where: {
-                userId: userId,
                 id: ctx.params.id,
             },
         });
@@ -116,7 +114,6 @@ router.delete('comments.delete', '/:id', async (ctx) => {
 
         const comment = await ctx.orm.Comment.findOne({
             where: {
-                userId: userId,
                 id: ctx.params.id,
             },
         });
@@ -193,7 +190,6 @@ router.patch('comments.update', '/:id', async (ctx) => {
 
         const comment = await ctx.orm.Comment.findOne({
             where: {
-                userId: userId,
                 id: ctx.params.id,
             },
         });
