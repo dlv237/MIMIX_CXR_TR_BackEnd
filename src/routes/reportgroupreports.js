@@ -295,6 +295,35 @@ router.get('reportgroupreports.translated', '/translated/:groupId', async (ctx) 
   }
 });
 
+router.get('reportgroupreport.batchProgress', '/batchprogress/:groupId', async (ctx) => {
+  try {
+    const groupId = ctx.params.groupId;
+
+    const reportGroupReports = await ctx.orm.ReportGroupReport.findAll({
+      where: { reportGroupId: groupId }
+    })
+
+    const userReportGroups = await ctx.orm.UserReportGroup.findAll({
+      where: { reportGroupId: groupId }
+    });
+
+    const progress = [];
+
+    for (const userReportGroup of userReportGroups) {
+      const lastTranslatedReportId = userReportGroup.lastTranslatedReportId;
+      const userId = userReportGroup.userId;
+      progress.push({ userId, lastTranslatedReportId});
+    }
+
+    ctx.body = progress;
+    ctx.status = 200;
+
+  } catch (error) {
+    ctx.body = error;
+    ctx.status = 400;
+  }
+});
+
 router.get('reportgroupreports.progress', '/progress/:groupId', async (ctx) => {
   try {
 
