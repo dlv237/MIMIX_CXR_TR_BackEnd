@@ -299,10 +299,6 @@ router.get('reportgroupreport.batchProgress', '/batchprogress/:groupId', async (
   try {
     const groupId = ctx.params.groupId;
 
-    const reportGroupReports = await ctx.orm.ReportGroupReport.findAll({
-      where: { reportGroupId: groupId }
-    })
-
     const userReportGroups = await ctx.orm.UserReportGroup.findAll({
       where: { reportGroupId: groupId }
     });
@@ -314,6 +310,8 @@ router.get('reportgroupreport.batchProgress', '/batchprogress/:groupId', async (
       const userId = userReportGroup.userId;
       progress.push({ userId, lastTranslatedReportId});
     }
+    console.log(userReportGroups);
+    console.log(progress);
 
     ctx.body = progress;
     ctx.status = 200;
