@@ -170,21 +170,21 @@ router.put('users.update', '/update', async (ctx) => {
 );
 
 router.get('users.list', '/list', async (ctx) => {
-    try {
-      const usersIds = ctx.request.body;
-
-      const users = await ctx.orm.User.findAll({
-        where: {
-          id: usersIds
-        }
-      });
-      ctx.body = users;
-      ctx.status = 200;
-    } catch (error) {
-      ctx
-      ctx.status = 400;
-    }
+  try {
+    const queryIds = ctx.query.usersIds;
+    const userIds = queryIds.split(',').map(id => parseInt(id, 10));
+    
+    const users = await ctx.orm.User.findAll({
+      where: {
+        id: userIds
+      }
+    });
+    ctx.body = users;
+    ctx.status = 200;
+  } catch (error) {
+    ctx.body = error;
+    ctx.status = 400;
   }
-);
+});
   
 module.exports = router;
