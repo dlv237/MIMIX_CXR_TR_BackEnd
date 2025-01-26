@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const Router = require('koa-router');
+const { where } = require('sequelize');
 const router = new Router();
 
 router.get('usertranslatedsentences.list', '/', async (ctx) => {
@@ -55,6 +56,51 @@ router.get('usertranslatedsentences.byTSentence', '/:id', async (ctx) => {
         ctx.body = error;
         ctx.status = 400;
     }
+});
+
+router.get('usertranslatedsentences.byReport', '/report/:reportId', async (ctx) => {
+  const token = ctx.request.headers.authorization;
+  const { reportId } = ctx.params;
+
+  if (!token) {
+    ctx.status = 401;
+    ctx.body = 'Token no proporcionado';
+    return;
+  }
+
+  const tokenParts = token.split(' ');
+  if (tokenParts.length !== 2 || tokenParts[0] !== 'Bearer') {
+    ctx.status = 401;
+    ctx.body = 'Token mal formateado';
+    return;
+  }
+
+  const accessToken = tokenParts[1];
+
+  try {
+    const decodedToken = jwt.verify(accessToken, process.env.JWT_SECRET);
+    const userId = decodedToken.userId;
+
+    // Obtenemos todas las UserTranslatedSentence del usuario para
+    // las translatedSentences que pertenecen a un reportId específico
+    const userTranslatedSentences = await ctx.orm.UserTranslatedSentence.findAll({
+      where: { userId },
+      include: [
+        {
+          model: ctx.orm.TranslatedSentence,
+          where: { reportId },
+        },
+      ],
+    });
+
+    // Retornamos el arreglo de userTranslatedSentences
+    // (si no se encontró nada, se enviará un arreglo vacío [])
+    ctx.body = userTranslatedSentences;
+    ctx.status = 200;
+  } catch (error) {
+    ctx.status = 400;
+    ctx.body = error;
+  }
 });
 
 router.get('usertranslatedsentences.byGroupId', '/countTotal/:id', async (ctx) => {
