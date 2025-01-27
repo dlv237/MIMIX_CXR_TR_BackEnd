@@ -40,6 +40,29 @@ router.get('translatedsentences.getById', '/:id', async (ctx) => {
       }
     });
 
+    ctx.status = 200;
+    ctx.body = { sentence, translatedSentence };
+  } catch (error) {
+    console.error('Error al obtener la TranslatedSentence por ID:', error);
+    ctx.status = 500;
+    ctx.body = { error: 'Ocurrió un error al obtener la TranslatedSentence.' };
+  }
+});
+
+router.get('translatedsentences.getById', '/withreportdata/:id', async (ctx) => {
+  const translatedSentenceId = ctx.params.id;
+  try {
+    const translatedSentence = await ctx.orm.TranslatedSentence.findOne({
+      where: {
+        id: translatedSentenceId
+      }
+    });
+    const sentence = await ctx.orm.Sentence.findOne({
+      where: {
+        id: translatedSentence.sentenceId
+      }
+    });
+
     const reportGroupReport = await ctx.orm.ReportGroupReport.findAll({
       where: {
         reportId: sentence.reportId
