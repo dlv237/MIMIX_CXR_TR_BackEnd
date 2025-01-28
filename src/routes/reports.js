@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const Router = require('koa-router');
 const router = new Router();
+const fs = require('fs');
 
 async function validateToken(ctx, token) {
     if (!token) {
@@ -227,8 +228,16 @@ router.get('reports.images', "/:id/images", async (ctx) => {
             }
         });
         console.log(report)
-        const imagesPaths = report.images.map(image => `data${image}`);
+        const imagesPaths = report.images.map(image => `/app/data${image}`);
         console.log(imagesPaths)
+        report.images.forEach(image => {
+            const filePath = `/app/data${image}`;
+            if (fs.existsSync(filePath)) {
+              console.log(`File exists: ${filePath}`);
+            } else {
+              console.error(`File not found: ${filePath}`);
+            }
+          });
         // convertimos las imagenes a base64
         const images = imagesPaths.map(imagePath => {
             const image = fs.readFileSync(imagePath);
