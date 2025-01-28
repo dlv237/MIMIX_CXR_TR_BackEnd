@@ -28,7 +28,8 @@ module.exports = (sequelize, DataTypes) => {
     report_translated: DataTypes.TEXT,
     report_file: DataTypes.TEXT,
     original_language: DataTypes.STRING,
-    mimic_id: DataTypes.STRING
+    mimic_id: DataTypes.STRING,
+    images: DataTypes.ARRAY(DataTypes.STRING),
   }, {
     sequelize,
     modelName: 'Report',
