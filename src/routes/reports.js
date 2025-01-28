@@ -218,4 +218,26 @@ router.delete('reports.destroyAll','/', async (ctx) => {
   });
   
 
+router.get('reports.images', "/:id/images", async (ctx) => {
+    const reportId = ctx.params.id;
+    try {
+        const report = await ctx.orm.Report.findOne({
+            where: {
+                id: reportId
+            }
+        });
+        const imagesPaths = report.images.map(image => `/app/data${image}`);
+        // convertimos las imagenes a base64
+        const images = imagesPaths.map(imagePath => {
+            const image = fs.readFileSync(imagePath);
+            return image.toString('base64');
+        });
+        ctx.body = images;
+        ctx.status = 200;
+    } catch (error) {
+        ctx.body = error;
+        ctx.status = 400;
+    }
+});
+
 module.exports = router
