@@ -226,12 +226,15 @@ router.get('reports.images', "/:id/images", async (ctx) => {
                 id: reportId
             }
         });
+        console.log(report)
         const imagesPaths = report.images.map(image => `/app/data${image}`);
+        console.log(imagesPaths)
         // convertimos las imagenes a base64
         const images = imagesPaths.map(imagePath => {
             const image = fs.readFileSync(imagePath);
             return image.toString('base64');
         });
+        console.log(images)
         ctx.body = images;
         ctx.status = 200;
     } catch (error) {
