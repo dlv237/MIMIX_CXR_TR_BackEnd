@@ -17,7 +17,6 @@ DB_USER y DB_PASSWORD son su usuario y contraseña de postgres. PORT es el puert
 DB_USERNAME = 
 DB_PASSWORD = 
 DB_NAME = nombre_bdd
-DB_HOST = 'localhost'
 PORT =
 ```
 

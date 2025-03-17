@@ -22,8 +22,10 @@ RUN . /app/venv/bin/activate && pip install --no-cache-dir -r requirements.txt
 # Copiar todo el proyecto
 COPY . .
 
+RUN cp -r src/config config
+
 # Comando para ejecutar la aplicación y los scripts
 CMD ["sh", "-c", "sleep 5 && yarn sequelize db:migrate && . /app/venv/bin/activate && yarn dev"]
 
 # Exponer el puerto de la aplicación
-EXPOSE 3000
+EXPOSE 8080
