@@ -1,4 +1,4 @@
-# IPre 2023-2 MIMIC-CXR-backend
+# Fondecyt HAIVis
 
 ## Como levantar Backend
 
@@ -21,7 +21,10 @@ PORT =
 ```
 
 ## Documentación 
-
-## Deploy del Frontend
-
 ## Deploy del Backend
+
+para subir a docker hub, desde la rama de cloud run:
+
+```
+docker build -t dlv237/api-mimic-cxr:latest --no-cache . && docker push dlv237/api-mimic-cxr:latest
+```

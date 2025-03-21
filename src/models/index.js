@@ -9,7 +9,6 @@ const env = process.env.NODE_ENV || 'development';
 let config = require(path.join(__dirname, '/../config/config.js'))[env];
 const db = {};
 
-config.dialectOptions.socketPath = `/cloudsql/${process.env.INSTANCE_CONNECTION_NAME}`;
 
 let sequelize;
 if (config.use_env_variable) {
