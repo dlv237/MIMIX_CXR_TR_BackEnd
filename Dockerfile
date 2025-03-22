@@ -24,6 +24,8 @@ COPY . .
 
 RUN cp -r src/config config
 
+RUN cp -r src/migrations migrations
+
 # Comando para ejecutar la aplicación y los scripts
 CMD ["sh", "-c", "sleep 5 && yarn sequelize db:migrate && . /app/venv/bin/activate && yarn dev"]
 
