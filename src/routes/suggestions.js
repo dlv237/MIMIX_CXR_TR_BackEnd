@@ -265,6 +265,110 @@ router.delete('suggestions.delete', '/delete/:translatedSentenceId', async (ctx)
 });
 
 
+router.get('suggestions.result', '/result/:groupId', async (ctx) => {
+  const groupId = ctx.params.groupId;
+  const userId = ctx.request.query.userId;
+
+  // Validación del token
+  const token = ctx.request.headers.authorization;
+  if (!token) {
+    ctx.status = 401;
+    ctx.body = 'Token no proporcionado';
+    return;
+  }
+  const tokenParts = token.split(' ');
+  if (tokenParts.length !== 2 || tokenParts[0] !== 'Bearer') {
+    ctx.status = 401;
+    ctx.body = 'Token mal formateado';
+    return;
+  }
+
+  try {
+    const groupReports = await ctx.orm.ReportGroupReport.findAll({
+      where: { reportGroupId: groupId },
+      attributes: ['reportId'],
+      include: [
+        {
+          model: ctx.orm.Report,
+          attributes: ['id'],
+          order: [['id', 'ASC']],
+          // Usamos alias "sentences" para que Sequelize sepa que debe buscar la asociación definida en Report
+          include: [
+            {
+              model: ctx.orm.Sentence,
+              as: 'sentences',
+              attributes: ['id', 'text', 'array_index'],
+              order: [['id', 'ASC']],
+              include: [
+                {
+                  model: ctx.orm.TranslatedSentence,
+                  as: 'translatedSentence',
+                  attributes: ['id', 'text'],
+                  order: [['id', 'ASC']],
+                  include: [
+                    {
+                      model: ctx.orm.Suggestion,
+                      as: 'suggestions',
+                      where: { userId: userId },
+                      required: false,
+                      attributes: ['changesFinalTranslation'],
+                      separate: true
+                    }
+                  ],
+                  required: false
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      order: [
+        // Ordenamos las sentencias según array_index
+        [ctx.orm.Report, { model: ctx.orm.Sentence, as: 'sentences' }, 'id', 'ASC']
+      ]
+    });
+
+    // Transformamos el resultado para devolver la estructura deseada
+    const finalResult = groupReports.map(grp => {
+      const report = grp.Report;
+      if (!report) {
+        return {
+          reportId: null,
+          sentences: []
+        };
+      }
+
+      const sentencesFormatted = (report.sentences || []).map(sentence => {
+        let suggestion = null;
+        // Revisamos si existe una TranslatedSentence y dentro de ella alguna Suggestion para el usuario
+        if (
+          sentence.translatedSentence &&
+          sentence.translatedSentence.suggestions &&
+          sentence.translatedSentence.suggestions.length > 0
+        ) {
+          suggestion = sentence.translatedSentence.suggestions[0].changesFinalTranslation;
+        }
+        return {
+          sentenceId: sentence.id,
+          sentence: sentence.text,
+          translatedSentence: sentence.translatedSentence.text,
+          ...(suggestion !== null ? { suggestion } : {})
+        };
+      });
+
+      return {
+        reportId: report.id,
+        sentences: sentencesFormatted
+      };
+    });
+
+    ctx.status = 200;
+    ctx.body = finalResult;
+  } catch (error) {
+    ctx.status = 400;
+    ctx.body = error.message || error;
+  }
+});
 
 
 module.exports = router

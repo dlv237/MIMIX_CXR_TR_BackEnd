@@ -20,11 +20,11 @@ DB_NAME = nombre_bdd
 PORT =
 ```
 
-## Documentación 
-## Deploy del Backend
+### Deploy del Backend
 
-para subir a docker hub, desde la rama de cloud run:
+
+## Backup SQL
 
 ```
-docker build -t dlv237/api-mimic-cxr:latest --no-cache . && docker push dlv237/api-mimic-cxr:latest
+sudo docker run --rm   -e PGPASSWORD=1qazxsw2M   -v $(pwd):/backup   postgres:15   pg_dump -h localhost -p 5445 -U dolobos MIMIC_CXR_DB -f /backup/backup.sql
 ```
