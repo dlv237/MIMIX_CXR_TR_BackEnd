@@ -352,7 +352,8 @@ router.get('suggestions.result', '/result/:groupId', async (ctx) => {
           sentenceId: sentence.id,
           sentence: sentence.text,
           translatedSentence: sentence.translatedSentence.text,
-          ...(suggestion !== null ? { suggestion } : {})
+          hasCorrection: !!suggestion,
+          suggestion: suggestion !== null ?  suggestion : sentence.translatedSentence.text
         };
       });
 
