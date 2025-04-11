@@ -269,7 +269,6 @@ router.get('suggestions.result', '/result/:groupId', async (ctx) => {
   const groupId = ctx.params.groupId;
   const userId = ctx.request.query.userId;
 
-  // Validación del token
   const token = ctx.request.headers.authorization;
   if (!token) {
     ctx.status = 401;
@@ -290,14 +289,13 @@ router.get('suggestions.result', '/result/:groupId', async (ctx) => {
       include: [
         {
           model: ctx.orm.Report,
-          attributes: ['id'],
+          attributes: ['id', 'impression', 'findings', 'background', 'report_file', 'original_language', 'report_translated'],
           order: [['id', 'ASC']],
-          // Usamos alias "sentences" para que Sequelize sepa que debe buscar la asociación definida en Report
           include: [
             {
               model: ctx.orm.Sentence,
               as: 'sentences',
-              attributes: ['id', 'text', 'array_index'],
+              attributes: ['id', 'text', 'array_index', 'sentence_type'],
               order: [['id', 'ASC']],
               include: [
                 {
@@ -323,12 +321,10 @@ router.get('suggestions.result', '/result/:groupId', async (ctx) => {
         }
       ],
       order: [
-        // Ordenamos las sentencias según array_index
         [ctx.orm.Report, { model: ctx.orm.Sentence, as: 'sentences' }, 'id', 'ASC']
       ]
     });
 
-    // Transformamos el resultado para devolver la estructura deseada
     const finalResult = groupReports.map(grp => {
       const report = grp.Report;
       if (!report) {
@@ -338,9 +334,24 @@ router.get('suggestions.result', '/result/:groupId', async (ctx) => {
         };
       }
 
+      const impression = report.impression;
+      const findings = report.findings;
+
+      const background_sentences = [];
+      const findings_sentences = [];
+      const impression_sentences = [];
+
+      const background_translated_sentences = [];
+      const findings_translated_sentences = [];
+      const impression_translated_sentences = [];
+
+      const suggested_background_sentences = [];
+      const suggested_findings_sentences = [];
+      const suggested_impression_sentences = [];
+
       const sentencesFormatted = (report.sentences || []).map(sentence => {
-        let suggestion = null;
-        // Revisamos si existe una TranslatedSentence y dentro de ella alguna Suggestion para el usuario
+        let suggestion;
+
         if (
           sentence.translatedSentence &&
           sentence.translatedSentence.suggestions &&
@@ -348,18 +359,54 @@ router.get('suggestions.result', '/result/:groupId', async (ctx) => {
         ) {
           suggestion = sentence.translatedSentence.suggestions[0].changesFinalTranslation;
         }
-        return {
-          sentenceId: sentence.id,
-          sentence: sentence.text,
-          translatedSentence: sentence.translatedSentence.text,
-          hasCorrection: !!suggestion,
-          suggestion: suggestion !== null ?  suggestion : sentence.translatedSentence.text
-        };
+
+        switch (sentence.sentence_type) {
+          case 'background':
+            background_sentences.push(sentence.text);
+            background_translated_sentences.push(sentence.translatedSentence.text);
+            if (suggestion) {
+              suggested_background_sentences.push(suggestion);
+            } else {
+              suggested_background_sentences.push("no suggestion");
+            }
+            break;
+          case 'findings':
+            findings_sentences.push(sentence.text);
+            findings_translated_sentences.push(sentence.translatedSentence.text);
+            if (suggestion) {
+              suggested_findings_sentences.push(suggestion);
+            } else {
+              suggested_findings_sentences.push("no suggestion");
+            }
+            break;
+          case 'impression':
+            impression_sentences.push(sentence.text);
+            impression_translated_sentences.push(sentence.translatedSentence.text);
+            if (suggestion) {
+              suggested_impression_sentences.push(suggestion);
+            } else {
+              suggested_impression_sentences.push("no suggestion");
+            }
+            break;
+        }
       });
 
       return {
-        reportId: report.id,
-        sentences: sentencesFormatted
+        report_id: report.id,
+        impression: impression,
+        findings: findings,
+        background_sentences: background_sentences,
+        findings_sentences: findings_sentences,
+        impression_sentences: impression_sentences,
+        background_translated_sentences: background_translated_sentences,
+        findings_translated_sentences: findings_translated_sentences,
+        impression_translated_sentences: impression_translated_sentences,
+        suggested_background_sentences: suggested_background_sentences,
+        suggested_findings_sentences: suggested_findings_sentences,
+        suggested_impression_sentences: suggested_impression_sentences,
+        original_language: report.original_language,
+        report_file: report.report_file,
+        report_used_for_translation: report.report_translated,
       };
     });
 
